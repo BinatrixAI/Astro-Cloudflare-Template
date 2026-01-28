@@ -1,0 +1,93 @@
+/* Fonts - uncomment and modify as needed */
+/* @import "@fontsource/inter/400.css"; */
+/* @import "@fontsource/inter/500.css"; */
+/* @import "@fontsource/inter/700.css"; */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Gradient text - customize colors as needed */
+.gradient-text {
+  background: linear-gradient(135deg, #0073ea 0%, #7950f2 50%, #00c875 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card effect */
+.glass-card {
+  background: hsl(var(--heroui-content1) / 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--heroui-default-200) / 0.3);
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Marquee animations - two rows scrolling opposite directions */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 40s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 40s linear infinite;
+}
+
+/* Speed up marquee on mobile */
+@media (max-width: 768px) {
+  .animate-marquee-left {
+    animation-duration: 20s;
+  }
+  .animate-marquee-right {
+    animation-duration: 20s;
+  }
+}
+
+.marquee-container {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+/* Pulse glow animation for CTA buttons */
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(0, 111, 238, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(0, 111, 238, 0.7)) drop-shadow(0 0 40px rgba(0, 111, 238, 0.4));
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}

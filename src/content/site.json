@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "title": "My Site",
+    "description": "Built with Astro + React + HeroUI + Cloudflare Workers"
+  },
+  "navigation": {
+    "logo": "MySite",
+    "links": [
+      { "label": "Home", "href": "#home" },
+      { "label": "Features", "href": "#features" },
+      { "label": "About", "href": "#about" },
+      { "label": "Contact", "href": "#contact" }
+    ],
+    "cta": {
+      "label": "Get Started",
+      "href": "#"
+    }
+  },
+  "hero": {
+    "title": "Welcome to My Site",
+    "subtitle": "A modern web application built with the latest technologies",
+    "cta": {
+      "label": "Get Started",
+      "href": "#"
+    }
+  },
+  "features": {
+    "title": "Features",
+    "items": [
+      {
+        "title": "Fast",
+        "description": "Built for performance with Astro and Cloudflare Workers"
+      },
+      {
+        "title": "Modern",
+        "description": "Using React 19, Tailwind CSS, and HeroUI components"
+      },
+      {
+        "title": "Animated",
+        "description": "Smooth animations powered by Framer Motion"
+      }
+    ]
+  },
+  "footer": {
+    "copyright": "2025 My Site. All rights reserved."
+  }
+}

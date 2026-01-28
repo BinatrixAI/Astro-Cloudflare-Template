@@ -1,0 +1,100 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.astro/
+
+# Cloudflare
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# Environment variables
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+
+# IDE & Editors
+# .vscode/ # KEPT for template - VS Code settings/extensions
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.assetsignore
+
+# Claude Code - exclude runtime files, KEEP config (agents, commands, skills)
+.claude/cache/
+.claude/debug/
+.claude/file-history/
+.claude/history.jsonl
+.claude/paste-cache/
+.claude/plans/
+.claude/session-env/
+.claude/shell-snapshots/
+.claude/stats-cache.json
+.claude/statsig/
+.claude/tasks/
+.claude/telemetry/
+.claude/todos/
+.claude/local/
+.claude/ide/
+.claude/plugins/
+.claude/projects/
+.claude/settings.local.json
+# KEPT: .claude/settings.json, .claude/agents/, .claude/commands/, .claude/skills/, .claude/config/
+
+# Other AI assistants
+.agent/
+settings.json
+
+# Dev containers
+# .devcontainer/ # KEPT for template - devcontainer config
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Raw assets / working files (not needed in production)
+assets/
+site_assets/
+
+# Lock files (uncomment if you prefer yarn/pnpm)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+
+# Vercel (if ever used)
+.vercel/
+
+# Netlify (if ever used)
+.netlify/
+
+# Cache
+.cache/
+.parcel-cache/

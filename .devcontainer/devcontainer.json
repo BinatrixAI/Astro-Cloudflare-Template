@@ -1,0 +1,91 @@
+{
+  "name": "astro-cloudflare-template",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": [
+    "--name",
+    "astro-cloudflare-template"
+  ],
+  "workspaceFolder": "/workspaces/astro-cloudflare-template",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint",
+        "dotenv.dotenv-vscode",
+        "esbenp.prettier-vscode",
+        "github.github-vscode-theme",
+        "lumirelle.shell-format-rev",
+        "ms-python.debugpy",
+        "ms-python.python",
+        "detachhead.basedpyright",
+        "pkief.material-icon-theme",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "dkodr.claudeboard",
+        "kaleidoscope-app.vscode-ksdiff"
+      ]
+    }
+  },
+  "forwardPorts": [
+    4321,
+    8799,
+    37777
+  ],
+  "portsAttributes": {
+    "4321": {
+      "label": "astro-dev"
+    },
+    "8799": {
+      "label": "wrangler-preview"
+    },
+    "37777": {
+      "label": "claude-mem"
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": true,
+      "upgradePackages": true,
+      "configureZshAsDefaultShell": true
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": false
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22",
+      "nvm": "latest",
+      "pnpm": "latest"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest",
+      "golangciLintVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "moby": "false",
+      "dockerDashComposeVersion": "v1",
+      "installDockerBuildx": "false",
+      "installDockerComposeSwitch": "false"
+    },
+    "ghcr.io/va-h/devcontainers-features/uv:1": {
+      "version": "latest",
+      "shellautocompletion": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/michidk/devcontainers-features/bun:1": {},
+    "ghcr.io/braun-daniel/devcontainer-features/spaceship:1": {},
+    "ghcr.io/braun-daniel/devcontainer-features/fzf:1": {}
+  },
+  "postCreateCommand": "curl -fsSL https://raw.githubusercontent.com/maxritter/claude-codepro/v5.2.4/install.sh | bash",
+  "remoteUser": "root",
+  "containerUser": "root"
+}

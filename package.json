@@ -1,0 +1,51 @@
+{
+  "name": "astro-cloudflare-template",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.0.3",
+    "@astrojs/react": "^4.2.1",
+    "@astrojs/tailwind": "^6.0.2",
+    "@casoon/astro-webvitals": "^0.2.1",
+    "@heroui/button": "^2.2.23-beta.2",
+    "@heroui/card": "^2.2.22-beta.2",
+    "@heroui/chip": "^2.2.19-beta.3",
+    "@heroui/divider": "^2.2.16-beta.5",
+    "@heroui/link": "^2.2.20-beta.3",
+    "@heroui/navbar": "^2.2.21-beta.2",
+    "@heroui/react": "^3.0.0-beta.5",
+    "@heroui/styles": "^3.0.0-beta.5",
+    "@heroui/system": "^2.4.19-beta.2",
+    "@heroui/theme": "^2.4.18-beta.7",
+    "astro": "^5.2.3",
+    "astro-critters": "^2.2.1",
+    "astro-seo": "^1.1.0",
+    "autoprefixer": "^10.4.23",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.29.0",
+    "lucide-react": "^0.563.0",
+    "motion": "^12.29.0",
+    "postcss": "^8.5.6",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^3.4.19",
+    "vite": "^7.3.1"
+  },
+  "devDependencies": {
+    "@playform/compress": "0.2.1",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "astro-robots-txt": "^1.0.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.60.0"
+  }
+}

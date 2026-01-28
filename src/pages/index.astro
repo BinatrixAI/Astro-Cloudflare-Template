@@ -1,0 +1,9 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import LandingPage from "@/components/LandingPage";
+import siteContent from "@/content/site.json";
+---
+
+<Layout title={siteContent.meta.title} description={siteContent.meta.description}>
+  <LandingPage client:load />
+</Layout>
