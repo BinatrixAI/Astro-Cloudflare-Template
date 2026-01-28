@@ -9,13 +9,17 @@ A production-ready template for building modern web applications with:
 - **Framer Motion** - Smooth animations
 - **Cloudflare Workers** - Edge deployment
 
+## Use This Template
+
+```bash
+gh repo create NEW-PROJECT-NAME --template BinatrixAI/Astro-Cloudflare-Template
+```
+
+Or click **"Use this template"** button on the [GitHub page](https://github.com/BinatrixAI/Astro-Cloudflare-Template).
+
 ## Quick Start
 
-1. **Clone/copy this template**
-   ```bash
-   cp -r astro-cloudflare-template my-new-project
-   cd my-new-project
-   ```
+1. **Create your project from template** (see above)
 
 2. **Install dependencies**
    ```bash
