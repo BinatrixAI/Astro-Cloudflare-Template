@@ -5,7 +5,6 @@ import tailwind from '@astrojs/tailwind';
 import robotsTxt from 'astro-robots-txt';
 import critters from 'astro-critters';
 import compress from '@playform/compress';
-import webVitals from '@casoon/astro-webvitals';
 
 export default defineConfig({
   // TODO: Update with your domain
@@ -30,8 +29,6 @@ export default defineConfig({
     }),
     // Critters inlines critical CSS for faster FCP
     critters(),
-    // Web Vitals monitoring (debug overlay in dev mode)
-    webVitals(),
     // Compress must be last - compresses CSS, HTML, JS, images, SVG, JSON
     compress(),
   ],

@@ -5,8 +5,9 @@ A production-ready template for building modern web applications with:
 - **Astro 5** - Server-side rendering with React islands
 - **React 19** - Interactive components
 - **Tailwind CSS 3** - Utility-first styling
-- **HeroUI v3** - Beautiful, accessible components
-- **Framer Motion** - Smooth animations
+- **HeroUI v3** - Beautiful, accessible components (navbars, modals, etc.)
+- **shadcn/ui** - Customizable primitives (forms, cards, badges)
+- **Motion (Framer Motion) v12** - Smooth animations
 - **Cloudflare Workers** - Edge deployment
 
 ## Use This Template
@@ -23,7 +24,7 @@ Or click **"Use this template"** button on the [GitHub page](https://github.com/
 
 2. **Install dependencies**
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 
 3. **Update configuration**
@@ -53,7 +54,15 @@ Or click **"Use this template"** button on the [GitHub page](https://github.com/
 ├── .vscode/                 # VS Code settings
 ├── src/
 │   ├── components/          # React components
-│   │   └── LandingPage.tsx  # Main landing page
+│   │   ├── LandingPage.tsx  # Main landing page
+│   │   └── ui/
+│   │       ├── curved-menu.tsx   # Custom Motion component
+│   │       └── shadcn/           # shadcn/ui components
+│   │           ├── button.tsx
+│   │           ├── card.tsx
+│   │           ├── input.tsx
+│   │           ├── badge.tsx
+│   │           └── index.ts      # Barrel export
 │   ├── content/             # Site content (JSON)
 │   │   └── site.json        # Navigation, text, etc.
 │   ├── icons/               # SVG icon components
@@ -64,9 +73,10 @@ Or click **"Use this template"** button on the [GitHub page](https://github.com/
 │   ├── pages/               # Astro pages
 │   │   └── index.astro      # Home page
 │   └── styles/
-│       └── global.css       # Tailwind + custom utilities
+│       └── global.css       # Tailwind + CSS variables + custom utilities
 ├── astro.config.mjs         # Astro configuration
-├── tailwind.config.js       # Tailwind + HeroUI config
+├── components.json          # shadcn/ui CLI configuration
+├── tailwind.config.js       # Tailwind + HeroUI + shadcn config
 ├── wrangler.jsonc           # Cloudflare Workers config
 └── CLAUDE.md                # Claude Code instructions
 ```
@@ -80,16 +90,45 @@ Or click **"Use this template"** button on the [GitHub page](https://github.com/
 | `npm run preview` | Preview production build |
 | `npm run deploy` | Build and deploy to Cloudflare |
 
-## Claude Code Features
+## UI Components
 
-This template includes:
+### HeroUI (Rich, Pre-styled Components)
 
-- **Hooks**: Prevents editing on main branch (safety)
-- **Plugins**: 
-  - `frontend-design` - UI/UX assistance
-  - `web-performance-optimization` - Performance tips
-  - `web-performance-audit` - Core Web Vitals
-  - `cloudflare-workers-ai` - Cloudflare integration
+```tsx
+import { Button } from "@heroui/button";
+import { Card, CardBody } from "@heroui/card";
+import { Navbar, NavbarBrand, NavbarContent } from "@heroui/navbar";
+```
+
+Best for: Navbars, modals, dropdowns, complex interactive components.
+
+### shadcn/ui (Customizable Primitives)
+
+```tsx
+import { Button, Card, Input, Badge } from "@/components/ui/shadcn";
+```
+
+Best for: Forms, basic cards, badges, components you want full control over.
+
+**Adding more shadcn components:**
+```bash
+npx shadcn@latest add [component-name]
+```
+
+### Motion (Animations)
+
+```tsx
+import { motion, AnimatePresence } from "motion/react";
+
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  whileHover={{ scale: 1.05 }}
+  transition={{ duration: 0.6 }}
+>
+  Animated content
+</motion.div>
+```
 
 ## Customization
 
@@ -105,6 +144,21 @@ This template includes:
 2. Add to `tailwind.config.js` content array
 3. Import in your React component
 
+### Adding shadcn Components
+
+```bash
+npx shadcn@latest add dialog
+npx shadcn@latest add dropdown-menu
+npx shadcn@latest add form
+```
+
+### Theming
+
+CSS variables are defined in `src/styles/global.css`:
+- Light/dark mode support via `.dark` class
+- shadcn variables: `--primary`, `--secondary`, `--background`, etc.
+- HeroUI theming via its plugin
+
 ### Environment Variables
 
 Add to `.env` and declare in `src/env.d.ts`:
@@ -113,10 +167,6 @@ interface ImportMetaEnv {
   readonly PUBLIC_MY_VAR: string;
 }
 ```
-
-## License
-
-MIT
 
 ## Claude Code Configuration
 
@@ -169,3 +219,7 @@ Located in `.claude/skills/`:
 | `cloudflare-deployment` | Cloudflare Workers deployment guide |
 
 Skills provide context-specific knowledge that Claude can reference when working on related tasks.
+
+## License
+
+MIT
