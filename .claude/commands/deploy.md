@@ -8,11 +8,39 @@ allowed_tools:
   - Bash
   - Glob
   - Grep
+  - AskUserQuestion
 ---
 
 # Full Deployment Workflow
 
 This command executes a complete deployment pipeline including documentation updates, versioning, git operations, and Cloudflare deployment.
+
+## Step 0: Check Cloudflare Configuration
+
+**IMPORTANT:** Before any deployment, check if `wrangler.jsonc` has placeholder values.
+
+Read `wrangler.jsonc` and check for:
+- `"account_id": "YOUR_ACCOUNT_ID"`
+- `"name": "my-astro-site"`
+- `"pattern": "your-domain.com"`
+
+If ANY placeholder values exist, use AskUserQuestion to ask:
+
+1. **Worker Name**: "What should be the Cloudflare Worker name for this project?"
+   - Options: Let user provide custom name
+   - This will be used in `wrangler.jsonc` "name" field
+
+2. **Cloudflare Account ID**: "What is your Cloudflare Account ID?"
+   - Options: Let user provide their account ID
+   - Found at: Cloudflare Dashboard → Workers & Pages → Account ID (right sidebar)
+
+3. **Domain (optional)**: "What domain should this worker be deployed to? (leave empty to skip custom domain)"
+   - Options: Custom domain or skip
+   - If skipped, remove the routes section from wrangler.jsonc
+
+Update `wrangler.jsonc` with the provided values before proceeding.
+
+**If wrangler.jsonc is already configured (no placeholders), skip to Step 1.**
 
 ## Step 1: Update CLAUDE.md
 
@@ -105,6 +133,8 @@ gh release create vX.Y.Z --generate-notes
 
 ## Step 7: Deploy to Cloudflare Workers
 
+**Pre-deployment check:** Verify wrangler.jsonc is configured (Step 0 completed).
+
 Execute deployment:
 ```bash
 npm run build && wrangler deploy
@@ -112,7 +142,7 @@ npm run build && wrangler deploy
 
 Verify deployment:
 1. Check Cloudflare dashboard for successful deployment
-2. Test the live site at configured domain
+2. Test the live site at configured domain (or workers.dev URL)
 3. Verify critical functionality works
 
 ## Step 8: Post-Deployment
@@ -146,4 +176,7 @@ npm run deploy
 
 # Monitor deployment
 wrangler tail
+
+# Find your Cloudflare Account ID
+# Go to: https://dash.cloudflare.com → Workers & Pages → Account ID (right sidebar)
 ```
