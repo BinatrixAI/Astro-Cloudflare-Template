@@ -53,8 +53,9 @@ Desktop.ini
 # KEPT: .claude/settings.json, .claude/agents/, .claude/commands/, .claude/skills/, .claude/config/
 
 # Other AI assistants
-.agent/
-settings.json
+.agent/*
+!.agent/skills/
+!.claude/settings.json
 
 # Dev containers
 # .devcontainer/ # KEPT for template - devcontainer config
