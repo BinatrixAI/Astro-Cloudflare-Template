@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-[PROJECT_NAME] - Built with Astro 5 + React 19, styled with Tailwind CSS 3 + HeroUI + shadcn/ui, animated with Motion (Framer Motion), and deployed to Cloudflare Workers.
+[PROJECT_NAME] - Built with Astro 5 + React 19, styled with Tailwind CSS 4 + HeroUI v3 + shadcn/ui, animated with Motion (Framer Motion), and deployed to Cloudflare Workers.
 
 ## Commands
 
@@ -25,7 +25,7 @@ npx wrangler pages dev ./dist --port 8799
 
 ### Tech Stack
 - **Framework**: Astro 5 (server mode) with React 19 for interactive components
-- **Styling**: Tailwind CSS 3 + HeroUI v3 beta + shadcn/ui (New York style)
+- **Styling**: Tailwind CSS 4 (CSS-first config) + HeroUI v3 + shadcn/ui (New York style)
 - **Animations**: Motion v12 (motion/react) - Framer Motion's new package
 - **Deployment**: Cloudflare Workers with `@astrojs/cloudflare` adapter
 - **Fonts**: [Configure fonts as needed]
@@ -38,10 +38,10 @@ npx wrangler pages dev ./dist --port 8799
 | `src/components/` | React components |
 | `src/components/ui/shadcn/` | shadcn/ui components |
 | `src/content/site.json` | Site content (text, navigation, etc.) |
-| `src/styles/global.css` | Tailwind directives, CSS variables, custom utilities |
+| `src/styles/global.css` | TW4 CSS-first config, CSS variables, custom utilities |
+| `src/styles/hero.ts` | HeroUI plugin wrapper for TW4 `@plugin` directive |
 | `components.json` | shadcn/ui CLI configuration |
 | `wrangler.jsonc` | Cloudflare Workers configuration |
-| `tailwind.config.js` | HeroUI plugin, shadcn colors, animations |
 
 ### Path Aliases
 ```typescript

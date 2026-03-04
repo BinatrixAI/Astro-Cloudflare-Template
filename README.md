@@ -4,7 +4,7 @@ A production-ready template for building modern web applications with:
 
 - **Astro 5** - Server-side rendering with React islands
 - **React 19** - Interactive components
-- **Tailwind CSS 3** - Utility-first styling
+- **Tailwind CSS 4** - Utility-first styling (CSS-first config)
 - **HeroUI v3** - Beautiful, accessible components (navbars, modals, etc.)
 - **shadcn/ui** - Customizable primitives (forms, cards, badges)
 - **Motion (Framer Motion) v12** - Smooth animations
@@ -24,7 +24,7 @@ Or click **"Use this template"** button on the [GitHub page](https://github.com/
 
 2. **Install dependencies**
    ```bash
-   npm install --legacy-peer-deps
+   npm install
    ```
 
 3. **Update configuration**
@@ -73,10 +73,10 @@ Or click **"Use this template"** button on the [GitHub page](https://github.com/
 │   ├── pages/               # Astro pages
 │   │   └── index.astro      # Home page
 │   └── styles/
-│       └── global.css       # Tailwind + CSS variables + custom utilities
-├── astro.config.mjs         # Astro configuration
+│       ├── global.css       # TW4 CSS-first config, variables, custom utilities
+│       └── hero.ts          # HeroUI plugin wrapper for @plugin directive
+├── astro.config.mjs         # Astro + @tailwindcss/vite configuration
 ├── components.json          # shadcn/ui CLI configuration
-├── tailwind.config.js       # Tailwind + HeroUI + shadcn config
 ├── wrangler.jsonc           # Cloudflare Workers config
 └── CLAUDE.md                # Claude Code instructions
 ```
@@ -136,12 +136,11 @@ import { motion, AnimatePresence } from "motion/react";
 
 1. Install from fontsource: `npm install @fontsource/your-font`
 2. Import in `src/styles/global.css`
-3. Add to `tailwind.config.js` fontFamily
 
 ### Adding HeroUI Components
 
 1. Import the component package (already included in dependencies)
-2. Add to `tailwind.config.js` content array
+2. HeroUI classes are auto-scanned via `@source` directive in `global.css`
 3. Import in your React component
 
 ### Adding shadcn Components
@@ -157,7 +156,8 @@ npx shadcn@latest add form
 CSS variables are defined in `src/styles/global.css`:
 - Light/dark mode support via `.dark` class
 - shadcn variables: `--primary`, `--secondary`, `--background`, etc.
-- HeroUI theming via its plugin
+- HeroUI theming via `@plugin` directive
+- Tailwind CSS v4 CSS-first configuration — no `tailwind.config.js` needed
 
 ### Environment Variables
 
