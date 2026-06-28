@@ -169,12 +169,12 @@ body {
   background-clip: text;
 }
 
-/* Glass card effect */
+/* Glass card effect - theme-neutral (uses shadcn tokens, works with or without HeroUI) */
 .glass-card {
-  background: hsl(var(--heroui-content1) / 0.6);
+  background: color-mix(in oklab, var(--card) 60%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid hsl(var(--heroui-default-200) / 0.3);
+  border: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
 }
 
 /* Hover lift effect */

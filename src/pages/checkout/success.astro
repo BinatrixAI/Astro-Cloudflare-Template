@@ -1,0 +1,45 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getPurchase } from "@/lib/db";
+import { formatPrice } from "@/lib/products";
+
+const order = Astro.url.searchParams.get("order") ?? "";
+const env = Astro.locals.runtime.env;
+const purchase = order ? await getPurchase(env.DB, order) : null;
+---
+
+<Layout title="Payment successful">
+  <main class="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-12">
+    <div class="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+      <div
+        class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </div>
+      <h1 class="mt-4 text-2xl font-semibold tracking-tight text-card-foreground">
+        Thank you for your payment
+      </h1>
+      {purchase ? (
+        <div class="mt-4 space-y-1 text-sm text-muted-foreground">
+          <p>{purchase.product_name}</p>
+          <p class="font-medium text-card-foreground">
+            {formatPrice(purchase.amount, purchase.currency)}
+          </p>
+          <p>Order: <span class="font-mono">{purchase.id}</span></p>
+        </div>
+      ) : (
+        <p class="mt-4 text-sm text-muted-foreground">
+          Your payment was received. A receipt has been sent to your email.
+        </p>
+      )}
+      <a
+        href="/"
+        class="mt-6 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+      >
+        Return home
+      </a>
+    </div>
+  </main>
+</Layout>

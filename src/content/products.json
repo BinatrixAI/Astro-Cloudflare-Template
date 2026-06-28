@@ -1,0 +1,20 @@
+{
+  "products": [
+    {
+      "id": "starter",
+      "name": "Starter Package",
+      "description": "A one-time starter package. Edit src/content/products.json to change.",
+      "price": 5000,
+      "currency": "ILS",
+      "image": null
+    },
+    {
+      "id": "pro",
+      "name": "Pro Package",
+      "description": "The pro tier with everything included.",
+      "price": 19900,
+      "currency": "ILS",
+      "image": null
+    }
+  ]
+}

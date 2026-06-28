@@ -1,7 +1,8 @@
-import { motion } from "motion/react";
-import type { SVGProps } from "react";
+import { motion, type SVGMotionProps } from "motion/react";
 
-interface AnimatedIconProps extends SVGProps<SVGSVGElement> {
+// Use motion's SVG prop types (not React's SVGProps) so spreading onto
+// motion.svg doesn't clash on onAnimationStart (motion redefines it).
+interface AnimatedIconProps extends SVGMotionProps<SVGSVGElement> {
   delay?: number;
 }
 
@@ -33,7 +34,7 @@ export function AnimatedCheckIcon({ delay = 0, ...props }: AnimatedIconProps) {
   );
 }
 
-export function AnimatedSpinner({ ...props }: SVGProps<SVGSVGElement>) {
+export function AnimatedSpinner({ ...props }: SVGMotionProps<SVGSVGElement>) {
   return (
     <motion.svg
       animate={{ rotate: 360 }}

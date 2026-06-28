@@ -1,0 +1,22 @@
+{
+  "title": "Summer Mechinot Tour",
+  "subtitle": "A day with the Mechinot — meet three programs, see the campuses, share a meal.",
+  "pricePerDay": 7000,
+  "currency": "ILS",
+  "maxPerDay": 10,
+  "deadline": "Registration closes July 20, 2026",
+  "days": [
+    {
+      "id": "jul27",
+      "name": "Tour Day 1",
+      "date": "Monday, July 27, 2026",
+      "details": "Three Mechinot · lunch & transport included"
+    },
+    {
+      "id": "aug2",
+      "name": "Tour Day 2",
+      "date": "Sunday, August 2, 2026",
+      "details": "Three Mechinot · lunch & transport included"
+    }
+  ]
+}

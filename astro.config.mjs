@@ -10,7 +10,11 @@ export default defineConfig({
   // TODO: Update with your domain
   site: 'https://your-domain.com',
   output: 'server',
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    // Expose local Cloudflare bindings (D1, secrets from .dev.vars) to
+    // Astro.locals.runtime.env during `astro dev`.
+    platformProxy: { enabled: true },
+  }),
   integrations: [
     react(),
     robotsTxt({
