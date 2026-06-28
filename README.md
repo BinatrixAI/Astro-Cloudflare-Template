@@ -1,5 +1,7 @@
 # Astro + Cloudflare Workers Template
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/BinatrixAI/Astro-Cloudflare-Template)
+
 A production-ready template for building modern web applications with:
 
 - **Astro 5** - Server-side rendering with React islands
@@ -19,6 +21,20 @@ gh repo create NEW-PROJECT-NAME --template BinatrixAI/Astro-Cloudflare-Template
 
 Or click **"Use this template"** on the [GitHub page](https://github.com/BinatrixAI/Astro-Cloudflare-Template).
 
+## Deploy to Cloudflare (one click)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/BinatrixAI/Astro-Cloudflare-Template)
+
+Clicking the button clones the repo to your account and deploys it. Cloudflare reads
+`wrangler.jsonc` and:
+- **provisions a D1 database** for the `DB` binding (and writes its id back to your config),
+- **prompts for secrets** listed in `.dev.vars.example` (`MOCK_SECRET`, `ADMIN_USER`, `ADMIN_PASSWORD`, and optional `YAAD_*`),
+- deploys the Worker to a `*.workers.dev` URL.
+
+After the first deploy: run `npm run db:migrate` to apply the payments schema, and add a custom
+domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The repository must be
+**public** for others to use the button.
+
 ## Quick Start
 
 1. **Create your project from template** (see above)
@@ -26,17 +42,18 @@ Or click **"Use this template"** on the [GitHub page](https://github.com/Binatri
    ```bash
    npm install
    ```
-3. **Update configuration**
+3. **Authenticate** with Cloudflare: `npx wrangler login` (set `CLOUDFLARE_ACCOUNT_ID` if you belong to multiple accounts).
+4. **Update configuration**
    - `package.json` - `name`
-   - `wrangler.jsonc` - `name`, `account_id`, routes (and D1 `database_id` if using payments)
+   - `wrangler.jsonc` - `name` (and D1 `database_id` once created; uncomment `routes` to add a custom domain)
    - `astro.config.mjs` - `site` URL
    - `CLAUDE.md` - project description
-4. **Local env** (optional, for payments/admin): `cp .dev.vars.example .dev.vars` and fill values.
-5. **Start development**
+5. **Local env** (optional, for payments/admin): `cp .dev.vars.example .dev.vars` and fill values.
+6. **Start development**
    ```bash
    npm run dev
    ```
-6. **Deploy to Cloudflare**
+7. **Deploy to Cloudflare**
    ```bash
    npm run deploy
    ```
