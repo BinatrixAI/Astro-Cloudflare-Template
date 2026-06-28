@@ -11,6 +11,22 @@
     "binding": "ASSETS",
     "directory": "./dist"
   },
+  // D1 database for payment records + audit logs.
+  // Create with: wrangler d1 create my-astro-site-db
+  // then paste the returned database_id below (TODO).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-astro-site-db",
+      "database_id": "YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Non-secret runtime vars. Secrets (MOCK_SECRET, ADMIN_*, YAAD_*) via `wrangler secret put`.
+  "vars": {
+    "PAYMENT_PROVIDER": "mock",
+    "PUBLIC_BASE_URL": "https://your-domain.com"
+  },
   // TODO: Update with your domain
   "routes": [
     {

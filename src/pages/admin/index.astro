@@ -1,0 +1,103 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { listPurchases, listEvents } from "@/lib/db";
+import { formatPrice } from "@/lib/products";
+
+const env = Astro.locals.runtime.env;
+const purchases = await listPurchases(env.DB, 100);
+const events = await listEvents(env.DB, 50);
+
+const statusClass: Record<string, string> = {
+  paid: "bg-primary/10 text-primary",
+  pending: "bg-muted text-muted-foreground",
+  failed: "bg-destructive/10 text-destructive",
+  refunded: "bg-secondary text-secondary-foreground",
+};
+
+function summarizeItems(itemsJson: string | null): string {
+  if (!itemsJson) return "—";
+  try {
+    const lines = JSON.parse(itemsJson) as { qty: number; name: string }[];
+    return lines.map((l) => `${l.qty}× ${l.name.split(" — ")[0]}`).join(", ");
+  } catch {
+    return "—";
+  }
+}
+---
+
+<Layout title="Admin — Purchases">
+  <main class="mx-auto max-w-6xl px-4 py-10">
+    <h1 class="text-2xl font-semibold tracking-tight">Purchases</h1>
+    <p class="mt-1 text-sm text-muted-foreground">
+      {purchases.length} record{purchases.length === 1 ? "" : "s"} (latest 100)
+    </p>
+
+    <div class="mt-6 overflow-x-auto rounded-lg border border-border">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-muted/50 text-muted-foreground">
+          <tr>
+            <th class="px-3 py-2 font-medium">Created</th>
+            <th class="px-3 py-2 font-medium">Order</th>
+            <th class="px-3 py-2 font-medium">Product</th>
+            <th class="px-3 py-2 font-medium">Items</th>
+            <th class="px-3 py-2 font-medium">Amount</th>
+            <th class="px-3 py-2 font-medium">Payer</th>
+            <th class="px-3 py-2 font-medium">Status</th>
+            <th class="px-3 py-2 font-medium">Yaad Id</th>
+          </tr>
+        </thead>
+        <tbody>
+          {purchases.map((p) => (
+            <tr class="border-t border-border">
+              <td class="whitespace-nowrap px-3 py-2 text-muted-foreground">{p.created_at}</td>
+              <td class="px-3 py-2 font-mono text-xs">{p.id}</td>
+              <td class="px-3 py-2">{p.product_name}</td>
+              <td class="px-3 py-2 text-xs text-muted-foreground">{summarizeItems(p.items_json)}</td>
+              <td class="whitespace-nowrap px-3 py-2">{formatPrice(p.amount, p.currency)}</td>
+              <td class="px-3 py-2">
+                <div>{p.payer_name} {p.payer_lname}</div>
+                <div class="text-xs text-muted-foreground">{p.payer_email}</div>
+              </td>
+              <td class="px-3 py-2">
+                <span class={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[p.status] ?? "bg-muted"}`}>
+                  {p.status}
+                </span>
+              </td>
+              <td class="px-3 py-2 font-mono text-xs">{p.yaad_txn_id ?? "—"}</td>
+            </tr>
+          ))}
+          {purchases.length === 0 && (
+            <tr><td colspan="8" class="px-3 py-8 text-center text-muted-foreground">No purchases yet.</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="mt-10 text-xl font-semibold tracking-tight">Recent events</h2>
+    <div class="mt-4 overflow-x-auto rounded-lg border border-border">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-muted/50 text-muted-foreground">
+          <tr>
+            <th class="px-3 py-2 font-medium">Time</th>
+            <th class="px-3 py-2 font-medium">Order</th>
+            <th class="px-3 py-2 font-medium">Type</th>
+            <th class="px-3 py-2 font-medium">Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {events.map((e) => (
+            <tr class="border-t border-border">
+              <td class="whitespace-nowrap px-3 py-2 text-muted-foreground">{e.created_at}</td>
+              <td class="px-3 py-2 font-mono text-xs">{e.order_id}</td>
+              <td class="px-3 py-2">{e.type}</td>
+              <td class="px-3 py-2 text-muted-foreground">{e.message}</td>
+            </tr>
+          ))}
+          {events.length === 0 && (
+            <tr><td colspan="4" class="px-3 py-8 text-center text-muted-foreground">No events yet.</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</Layout>

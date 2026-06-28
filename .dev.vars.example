@@ -1,0 +1,20 @@
+# Copy to `.dev.vars` for local dev (`.dev.vars` is gitignored).
+# In production set these with: wrangler secret put <NAME>
+
+# Payment provider: "mock" (no gateway needed) | "yaad" (real Yaad Sarig / Hyp)
+PAYMENT_PROVIDER=mock
+# HMAC key for the mock provider's signed links (any random string locally)
+MOCK_SECRET=replace-with-a-random-string
+
+# Admin (HTTP Basic Auth for /admin)
+ADMIN_USER=admin
+ADMIN_PASSWORD=replace-me
+
+# Base URL used to build payment callback/return URLs
+PUBLIC_BASE_URL=http://localhost:4321
+
+# Yaad Sarig / Hyp — only needed when PAYMENT_PROVIDER=yaad.
+# Public DEMO terminal (test only; replace for production):
+# YAAD_MASOF=0010131918
+# YAAD_PASSP=yaad
+# YAAD_KEY=7110eda4d09e062aa5e4a390b0a572ac0d2c0220

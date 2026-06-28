@@ -1,0 +1,64 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { mockSign } from "@/lib/payments";
+
+export const prerender = false;
+
+const url = Astro.url;
+const order = url.searchParams.get("order") ?? "";
+const amount = url.searchParams.get("amount") ?? "";
+const name = url.searchParams.get("name") ?? "";
+const info = url.searchParams.get("info") ?? "";
+const sig = url.searchParams.get("sig") ?? "";
+
+const env = Astro.locals.runtime.env;
+const expected = order && amount ? await mockSign(env.MOCK_SECRET, order, amount) : "";
+const valid = sig.length > 0 && sig === expected;
+
+if (!valid) {
+  Astro.response.status = 400;
+}
+
+const q = (extra: Record<string, string>) => {
+  const p = new URLSearchParams({ Order: order, Amount: amount, Sign: sig, ...extra });
+  return `/api/payments/callback?${p.toString()}`;
+};
+const approveUrl = q({ CCode: "0", Id: `MOCK-${order}`, ACode: "MOCKAUTH" });
+const declineUrl = q({ CCode: "901" });
+---
+
+<Layout title="Mock payment">
+  <main class="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-12">
+    {valid ? (
+      <div class="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <div class="mb-4 rounded-md border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+          Mock payment — no real charge
+        </div>
+        <h1 class="text-xl font-semibold tracking-tight text-card-foreground">Confirm payment</h1>
+        <dl class="mt-4 space-y-2 text-sm">
+          <div class="flex justify-between"><dt class="text-muted-foreground">Description</dt><dd class="text-card-foreground">{info}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted-foreground">Payer</dt><dd class="text-card-foreground">{name}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted-foreground">Order</dt><dd class="font-mono text-xs text-card-foreground">{order}</dd></div>
+          <div class="flex justify-between border-t border-border pt-2 text-base font-semibold"><dt>Total</dt><dd>₪{amount}</dd></div>
+        </dl>
+        <div class="mt-6 flex flex-col gap-3">
+          <a href={approveUrl} class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90">
+            Approve (test success)
+          </a>
+          <a href={declineUrl} class="inline-flex h-10 items-center justify-center rounded-md border border-input px-4 text-sm font-medium hover:bg-accent">
+            Decline
+          </a>
+        </div>
+        <p class="mt-4 text-center text-xs text-muted-foreground">
+          Simulates the Yaad hosted page. Set <code>PAYMENT_PROVIDER=yaad</code> for the real gateway.
+        </p>
+      </div>
+    ) : (
+      <div class="rounded-xl border border-destructive/30 bg-card p-8 text-center shadow-sm">
+        <h1 class="text-xl font-semibold text-destructive">Invalid payment link</h1>
+        <p class="mt-2 text-sm text-muted-foreground">The signature did not validate. This link is invalid or has been tampered with.</p>
+        <a href="/" class="mt-6 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline">Return home</a>
+      </div>
+    )}
+  </main>
+</Layout>

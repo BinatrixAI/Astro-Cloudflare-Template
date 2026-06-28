@@ -1,0 +1,30 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CheckoutForm from "@/components/CheckoutForm";
+import { getProduct, formatPrice } from "@/lib/products";
+
+const { product: productId } = Astro.params;
+const product = productId ? getProduct(productId) : undefined;
+
+if (!product) {
+  return new Response("Product not found", { status: 404 });
+}
+
+const priceLabel = formatPrice(product.price, product.currency);
+---
+
+<Layout title={`Checkout — ${product.name}`} description={product.description}>
+  <main class="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-12">
+    <div class="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <h1 class="text-2xl font-semibold tracking-tight text-card-foreground">
+        {product.name}
+      </h1>
+      <p class="mt-1 text-sm text-muted-foreground">{product.description}</p>
+      <div class="mt-4">
+        <span class="text-3xl font-bold text-card-foreground">{priceLabel}</span>
+      </div>
+      <hr class="my-6 border-border" />
+      <CheckoutForm client:load productId={product.id} priceLabel={priceLabel} />
+    </div>
+  </main>
+</Layout>
