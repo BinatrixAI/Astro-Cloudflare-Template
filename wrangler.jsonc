@@ -2,8 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   // TODO: Update worker name
   "name": "my-astro-site",
-  // TODO: Update with your Cloudflare account ID
-  "account_id": "YOUR_ACCOUNT_ID",
+  // account_id is taken from your `wrangler login` session / the Deploy-to-Cloudflare
+  // flow. For multi-account setups, set CLOUDFLARE_ACCOUNT_ID or add "account_id" here.
   "main": "dist/_worker.js/index.js",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
@@ -27,17 +27,12 @@
     "PAYMENT_PROVIDER": "mock",
     "PUBLIC_BASE_URL": "https://your-domain.com"
   },
-  // TODO: Update with your domain
-  "routes": [
-    {
-      "pattern": "your-domain.com",
-      "custom_domain": true
-    },
-    {
-      "pattern": "www.your-domain.com/*",
-      "zone_name": "your-domain.com"
-    }
-  ],
+  // Custom domain — left commented so one-click / first deploys go to *.workers.dev.
+  // Uncomment and set your domain after the first deploy.
+  // "routes": [
+  //   { "pattern": "your-domain.com", "custom_domain": true },
+  //   { "pattern": "www.your-domain.com/*", "zone_name": "your-domain.com" }
+  // ],
   // Cloudflare Workers Builds configuration
   "build": {
     "command": "npm run build"
