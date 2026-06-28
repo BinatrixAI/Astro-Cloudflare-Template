@@ -8,6 +8,8 @@ export interface Product {
   price: number;
   currency: string;
   image: string | null;
+  /** Max quantity per order line (optional, defaults to 1). */
+  maxQty?: number;
 }
 
 const PRODUCTS: Product[] = catalog.products as Product[];

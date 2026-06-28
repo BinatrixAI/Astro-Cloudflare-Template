@@ -1,7 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tour-binatrix",
-  "account_id": "85b301e09d399a4c5cc4933d0ac9fd03",
+  // TODO: Update worker name
+  "name": "my-astro-site",
+  // TODO: Update with your Cloudflare account ID
+  "account_id": "YOUR_ACCOUNT_ID",
   "main": "dist/_worker.js/index.js",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
@@ -10,24 +12,30 @@
     "directory": "./dist"
   },
   // D1 database for payment records + audit logs.
-  // Created with: wrangler d1 create tour-binatrix-db
+  // Create with: wrangler d1 create my-astro-site-db
+  // then paste the returned database_id below (TODO).
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "tour-binatrix-db",
-      "database_id": "9aa7636b-1f58-446a-8ca5-3a16f607b2fe",
+      "database_name": "my-astro-site-db",
+      "database_id": "YOUR_D1_DATABASE_ID",
       "migrations_dir": "migrations"
     }
   ],
   // Non-secret runtime vars. Secrets (MOCK_SECRET, ADMIN_*, YAAD_*) via `wrangler secret put`.
   "vars": {
     "PAYMENT_PROVIDER": "mock",
-    "PUBLIC_BASE_URL": "https://tour.binatrix.net"
+    "PUBLIC_BASE_URL": "https://your-domain.com"
   },
+  // TODO: Update with your domain
   "routes": [
     {
-      "pattern": "tour.binatrix.net",
+      "pattern": "your-domain.com",
       "custom_domain": true
+    },
+    {
+      "pattern": "www.your-domain.com/*",
+      "zone_name": "your-domain.com"
     }
   ],
   // Cloudflare Workers Builds configuration

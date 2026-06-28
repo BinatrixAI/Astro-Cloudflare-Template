@@ -6,9 +6,10 @@ A production-ready template for building modern web applications with:
 - **React 19** - Interactive components
 - **Tailwind CSS 4** - Utility-first styling (CSS-first config)
 - **HeroUI v3** - Beautiful, accessible components (navbars, modals, etc.)
-- **shadcn/ui** - Customizable primitives (forms, cards, badges)
+- **shadcn/ui** - Customizable primitives (forms, cards, inputs, badges)
 - **Motion (Framer Motion) v12** - Smooth animations
-- **Cloudflare Workers** - Edge deployment
+- **Cloudflare Workers + D1** - Edge deployment with a SQLite database
+- **Payments** - Optional payment pages (Yaad Sarig / Hyp) with a mock provider for local testing
 
 ## Use This Template
 
@@ -16,209 +17,187 @@ A production-ready template for building modern web applications with:
 gh repo create NEW-PROJECT-NAME --template BinatrixAI/Astro-Cloudflare-Template
 ```
 
-Or click **"Use this template"** button on the [GitHub page](https://github.com/BinatrixAI/Astro-Cloudflare-Template).
+Or click **"Use this template"** on the [GitHub page](https://github.com/BinatrixAI/Astro-Cloudflare-Template).
 
 ## Quick Start
 
 1. **Create your project from template** (see above)
-
 2. **Install dependencies**
    ```bash
    npm install
    ```
-
 3. **Update configuration**
-   - `package.json` - Update `name`
-   - `wrangler.jsonc` - Update `name`, `account_id`, and routes
-   - `astro.config.mjs` - Update `site` URL
-   - `CLAUDE.md` - Update project description
-   - `.devcontainer/devcontainer.json` - Update `name` and `workspaceFolder`
-
-4. **Start development**
+   - `package.json` - `name`
+   - `wrangler.jsonc` - `name`, `account_id`, routes (and D1 `database_id` if using payments)
+   - `astro.config.mjs` - `site` URL
+   - `CLAUDE.md` - project description
+4. **Local env** (optional, for payments/admin): `cp .dev.vars.example .dev.vars` and fill values.
+5. **Start development**
    ```bash
    npm run dev
    ```
-
-5. **Deploy to Cloudflare**
+6. **Deploy to Cloudflare**
    ```bash
    npm run deploy
    ```
-
-## Project Structure
-
-```
-├── .claude/                 # Claude Code configuration
-│   ├── settings.json        # Plugins and hooks
-│   └── config/              # Additional config
-├── .devcontainer/           # Dev container setup
-├── .vscode/                 # VS Code settings
-├── src/
-│   ├── components/          # React components
-│   │   ├── LandingPage.tsx  # Main landing page
-│   │   └── ui/
-│   │       ├── curved-menu.tsx   # Custom Motion component
-│   │       └── shadcn/           # shadcn/ui components
-│   │           ├── button.tsx
-│   │           ├── card.tsx
-│   │           ├── input.tsx
-│   │           ├── badge.tsx
-│   │           └── index.ts      # Barrel export
-│   ├── content/             # Site content (JSON)
-│   │   └── site.json        # Navigation, text, etc.
-│   ├── icons/               # SVG icon components
-│   ├── layouts/             # Astro layouts
-│   │   └── Layout.astro     # Base HTML layout
-│   ├── lib/                 # Utilities
-│   │   └── utils.ts         # cn() helper for Tailwind
-│   ├── pages/               # Astro pages
-│   │   └── index.astro      # Home page
-│   └── styles/
-│       ├── global.css       # TW4 CSS-first config, variables, custom utilities
-│       └── hero.ts          # HeroUI plugin wrapper for @plugin directive
-├── astro.config.mjs         # Astro + @tailwindcss/vite configuration
-├── components.json          # shadcn/ui CLI configuration
-├── wrangler.jsonc           # Cloudflare Workers config
-└── CLAUDE.md                # Claude Code instructions
-```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start dev server at localhost:4321 |
+| `npm run dev` | Start dev server at localhost:4321 (local D1 + `.dev.vars`) |
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
 | `npm run deploy` | Build and deploy to Cloudflare |
+| `npm run cf-types` | Regenerate `worker-configuration.d.ts` after editing `wrangler.jsonc` |
+| `npm run db:migrate:local` | Apply D1 migrations to the local database |
+| `npm run db:migrate` | Apply D1 migrations to the remote (production) database |
+
+## Project Structure
+
+```
+├── migrations/              # D1 SQL migrations (payments schema)
+├── public/                  # Static assets (+ .assetsignore for Workers deploy)
+├── src/
+│   ├── components/
+│   │   ├── LandingPage.tsx      # Demo landing page
+│   │   ├── CheckoutForm.tsx     # Payment buyer form (shadcn + react-hook-form + zod)
+│   │   └── ui/
+│   │       ├── curved-menu.tsx
+│   │       └── shadcn/          # button, card, input, badge, label, select, form
+│   ├── content/
+│   │   ├── site.json           # Navigation, hero, features, footer copy
+│   │   └── products.json       # Payment catalog (id, name, price in minor units)
+│   ├── icons/
+│   ├── layouts/Layout.astro    # Base layout (has a `head` slot for fonts, etc.)
+│   ├── lib/
+│   │   ├── utils.ts            # cn() helper
+│   │   ├── products.ts         # Product catalog access
+│   │   ├── catalog.ts          # getPriceableItem() resolver
+│   │   ├── validation.ts       # zod schemas (buyer + cart)
+│   │   ├── db.ts               # D1 helpers (purchases, payment_events)
+│   │   └── payments/           # Provider abstraction: mock | yaad
+│   ├── middleware.ts           # Basic-Auth guard for /admin
+│   ├── pages/
+│   │   ├── index.astro
+│   │   ├── checkout/[product].astro, success.astro, failed.astro
+│   │   ├── mock-pay.astro      # Mock "hosted payment" page (UAT)
+│   │   ├── admin/index.astro   # Purchases + audit log (Basic Auth)
+│   │   └── api/checkout.ts, api/payments/callback.ts
+│   └── styles/global.css, hero.ts
+├── astro.config.mjs · components.json · wrangler.jsonc · CLAUDE.md · docs/UAT.md
+```
+
+## Creating New Pages
+
+Astro routes live in `src/pages/`. A file `src/pages/about.astro` → `/about`.
+
+**1. Static / content page**
+```astro
+---
+import Layout from "@/layouts/Layout.astro";
+---
+<Layout title="About" description="…">
+  <main class="mx-auto max-w-3xl px-4 py-12">…</main>
+</Layout>
+```
+Centralize copy in `src/content/site.json` and add the route to its `navigation.links`.
+
+**2. Interactive page (React island)** — create `src/components/MyWidget.tsx`, then hydrate it:
+```astro
+---
+import Layout from "@/layouts/Layout.astro";
+import MyWidget from "@/components/MyWidget";
+---
+<Layout title="…"><MyWidget client:load /></Layout>
+```
+Use shadcn primitives (`@/components/ui/shadcn`) for forms/cards and HeroUI for rich chrome
+(navbars, modals). Add more primitives with `npx shadcn@latest add <component>`.
+
+**3. Page-specific `<head>`** (fonts, meta) — use the Layout's `head` slot:
+```astro
+<Layout title="…">
+  <Fragment slot="head"><link rel="stylesheet" href="https://fonts.googleapis.com/…" /></Fragment>
+  …
+</Layout>
+```
+
+> The `/new-page` Claude Code command scaffolds a page + React component for you.
+
+## Payments (optional)
+
+Server-priced checkout → hosted payment page → verified callback → D1 records + audit log. No user accounts.
+
+**Provider switch** via `PAYMENT_PROVIDER`:
+- `mock` (default) — self-contained: a built-in `/mock-pay` page + HMAC-signed links. Test the
+  **entire** cycle locally with no gateway or credentials.
+- `yaad` — real **Yaad Sarig / Hyp** (`pay.hyp.co.il`); SIGN/VERIFY server round-trips (`src/lib/payments/yaad.ts`).
+
+**Add a payment page** = add a product to `src/content/products.json` (price in **minor units**, e.g. `5000` = ₪50). A checkout page is served at `/checkout/<id>` via `src/pages/checkout/[product].astro`. All checkouts `POST` a cart `{ items:[{id,qty}], …buyer }` to `/api/checkout`, which **recomputes the total server-side** (never trusts the client). For custom layouts, build your own form that posts the same payload (see `CheckoutForm.tsx`).
+
+**Records & logs:** the `purchases` table (records) + `payment_events` (audit trail) in D1, viewable at `/admin` (Basic Auth). Full test plan: [`docs/UAT.md`](docs/UAT.md).
+
+**Set up D1:**
+```bash
+wrangler d1 create my-astro-site-db          # paste database_id into wrangler.jsonc
+npm run db:migrate:local                       # local
+npm run db:migrate                             # remote
+```
+
+**Go live with Yaad:** set `PAYMENT_PROVIDER=yaad`, add `YAAD_MASOF/PASSP/KEY` secrets, and point
+the Hyp terminal's return URL at `<PUBLIC_BASE_URL>/api/payments/callback`. Then re-run the UAT
+with Yaad test cards.
+
+## Environment & Secrets
+
+Bindings/secrets are accessed via `Astro.locals.runtime.env` (typed in `src/env.d.ts`).
+Set locally in `.dev.vars` (copy from `.dev.vars.example`); set in production with `wrangler secret put <NAME>`
+(or `vars` in `wrangler.jsonc` for non-secrets). Client-exposed values use the `PUBLIC_` prefix and `import.meta.env`.
+
+| Name | Where | Purpose |
+|------|-------|---------|
+| `PAYMENT_PROVIDER` | var | `mock` (default) or `yaad` |
+| `MOCK_SECRET` | secret | HMAC key for the mock provider |
+| `ADMIN_USER` / `ADMIN_PASSWORD` | secret | Basic Auth for `/admin` |
+| `YAAD_MASOF` / `YAAD_PASSP` / `YAAD_KEY` | secret | Yaad terminal (only when `PAYMENT_PROVIDER=yaad`) |
+| `PUBLIC_BASE_URL` | var | Origin for building callback URLs |
 
 ## UI Components
 
-### HeroUI (Rich, Pre-styled Components)
-
+### HeroUI (rich, pre-styled)
 ```tsx
 import { Button } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
 import { Navbar, NavbarBrand, NavbarContent } from "@heroui/navbar";
 ```
+Best for: navbars, modals, dropdowns, complex interactive chrome.
 
-Best for: Navbars, modals, dropdowns, complex interactive components.
-
-### shadcn/ui (Customizable Primitives)
-
+### shadcn/ui (customizable primitives)
 ```tsx
-import { Button, Card, Input, Badge } from "@/components/ui/shadcn";
+import { Button, Card, Input, Label, Select, Form } from "@/components/ui/shadcn";
 ```
+Best for: forms (with react-hook-form + zod), cards, badges. Add more: `npx shadcn@latest add <component>`.
 
-Best for: Forms, basic cards, badges, components you want full control over.
-
-**Adding more shadcn components:**
-```bash
-npx shadcn@latest add [component-name]
-```
-
-### Motion (Animations)
-
+### Motion (animations)
 ```tsx
-import { motion, AnimatePresence } from "motion/react";
-
-<motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  whileHover={{ scale: 1.05 }}
-  transition={{ duration: 0.6 }}
->
-  Animated content
-</motion.div>
+import { motion } from "motion/react";
+<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} />
 ```
 
-## Customization
+**Which to use?** HeroUI = app chrome/overlays · shadcn = primitives & forms · Motion = animation.
+Don't mix a HeroUI and a shadcn `Button` in the same region. See `CLAUDE.md` for the full matrix.
 
-### Adding Fonts
+## Theming
 
-1. Install from fontsource: `npm install @fontsource/your-font`
-2. Import in `src/styles/global.css`
-
-### Adding HeroUI Components
-
-1. Import the component package (already included in dependencies)
-2. HeroUI classes are auto-scanned via `@source` directive in `global.css`
-3. Import in your React component
-
-### Adding shadcn Components
-
-```bash
-npx shadcn@latest add dialog
-npx shadcn@latest add dropdown-menu
-npx shadcn@latest add form
-```
-
-### Theming
-
-CSS variables are defined in `src/styles/global.css`:
-- Light/dark mode support via `.dark` class
-- shadcn variables: `--primary`, `--secondary`, `--background`, etc.
-- HeroUI theming via `@plugin` directive
-- Tailwind CSS v4 CSS-first configuration — no `tailwind.config.js` needed
-
-### Environment Variables
-
-Add to `.env` and declare in `src/env.d.ts`:
-```typescript
-interface ImportMetaEnv {
-  readonly PUBLIC_MY_VAR: string;
-}
-```
+CSS variables in `src/styles/global.css` (Tailwind v4 CSS-first — no `tailwind.config.js`):
+- Light/dark via `.dark` class; shadcn tokens (`--primary`, `--background`, …)
+- HeroUI theming via the `@plugin` directive (`src/styles/hero.ts`)
+- Custom utilities: `.gradient-text`, `.glass-card`, `.hover-lift`, `.animate-pulse-glow`
 
 ## Claude Code Configuration
 
-### Custom Agents
-
-Located in `.claude/agents/`:
-
-| Agent | Description |
-|-------|-------------|
-| `cloudflare-expert` | Cloudflare Workers, R2, D1, AI Gateway expertise |
-| `frontend-designer` | UI/UX design, React components, animations |
-
-### Custom Commands
-
-Located in `.claude/commands/`:
-
-| Command | Description |
-|---------|-------------|
-| `/deploy` | Build and deploy to Cloudflare Workers |
-| `/perf-check` | Run performance analysis |
-| `/add-component` | Add a new HeroUI component |
-| `/new-page` | Create a new Astro page with React component |
-
-### Enabled Plugins
-
-Configured in `.claude/settings.json`:
-
-- `frontend-design` - UI/UX design assistance
-- `claude-md-management` - CLAUDE.md file management
-- `claude-code-setup` - Project setup automation
-- `web-performance-optimization` - Performance tips
-- `web-performance-audit` - Core Web Vitals analysis
-- `cloudflare-workers` - Workers development
-- `cloudflare-r2` - R2 storage integration
-- `tailwind-v4-shadcn` - Tailwind CSS patterns
-- `mcp-management` - MCP server management
-
-### Safety Hooks
-
-The template includes a pre-tool hook that prevents editing files while on the `main` branch. This encourages feature branch workflows.
-
-### Custom Skills
-
-Located in `.claude/skills/`:
-
-| Skill | Description |
-|-------|-------------|
-| `heroui-patterns` | HeroUI component usage patterns and best practices |
-| `motion-animations` | Framer Motion animation recipes |
-| `cloudflare-deployment` | Cloudflare Workers deployment guide |
-
-Skills provide context-specific knowledge that Claude can reference when working on related tasks.
+Custom agents (`.claude/agents/`), commands (`.claude/commands/`: `/deploy`, `/perf-check`,
+`/add-component`, `/new-page`), skills (`.claude/skills/`), and a pre-tool hook that blocks
+edits on `main` to encourage feature-branch workflows. See `CLAUDE.md` for details.
 
 ## License
 

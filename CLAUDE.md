@@ -202,7 +202,7 @@ Server-priced cart → hosted payment link → verified callback → D1 records 
 - `yaad` — real Yaad Sarig / Hyp (`src/lib/payments/yaad.ts`): SIGN/VERIFY server round-trips. Needs `YAAD_MASOF/PASSP/KEY` + the Hyp terminal return URL set to `<PUBLIC_BASE_URL>/api/payments/callback`.
 - Selected by `getProvider(env)` in `src/lib/payments/index.ts`. Both implement `PaymentProvider` (`createPaymentLink` + `verifyCallback`).
 
-**Demo tour page:** `/tour` (`src/pages/tour.astro` + `src/components/TourRegistration.tsx`) — a multi-ticket registration page (catalog in `src/content/tours.json`) deployed at `tour.binatrix.net`. Items resolve via `src/lib/catalog.ts` (`getPriceableItem` merges products + tour days).
+**Catalog:** items resolve via `src/lib/catalog.ts` (`getPriceableItem`, sourced from `src/content/products.json`). The cart endpoint supports multiple line items with quantities — extend `getPriceableItem` to merge additional catalogs (e.g. event tickets) when needed.
 
 **Add a single-product payment page** = add a product to `src/content/products.json` (price in **minor units** / agorot). A checkout page is served at `/checkout/<id>` via `src/pages/checkout/[product].astro`. All checkouts POST a cart `{ items:[{id,qty}], ...buyer }` to `/api/checkout`, which **recomputes the total server-side** from the catalog.
 
