@@ -7,6 +7,9 @@
  *  - ALWAYS send UTF8=True + UTF8out=True so Hebrew + callback values are UTF-8.
  *  - The SIGN response body is a raw query string; append it VERBATIM to build the
  *    payment URL. Re-encoding/reordering it breaks the signature.
+ *  - MUST send Sign=True on SIGN: it tells Hyp to put a `Sign` signature in the
+ *    completion redirect. Without it, What=VERIFY has nothing to check and returns a
+ *    non-zero CCode — i.e. every real payment would be rejected on the callback.
  *  - The success/return URL is configured on the terminal in the Hyp dashboard and
  *    should point at `<PUBLIC_BASE_URL>/api/payments/callback`.
  */
@@ -49,6 +52,7 @@ export class YaadProvider implements PaymentProvider {
       PassP: this.creds.YAAD_PASSP,
       Masof: this.creds.YAAD_MASOF,
       Amount: p.amountMajor,
+      Sign: "True", // REQUIRED — makes Hyp put the redirect signature that What=VERIFY checks
       Coin: String(currencyToCoin(p.currency)),
       Order: p.order,
       Info: p.info,
