@@ -104,3 +104,4 @@ site_assets/
 # Cache
 .cache/
 .parcel-cache/
+.impeccable/
