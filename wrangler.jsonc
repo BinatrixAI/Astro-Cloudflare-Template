@@ -4,12 +4,12 @@
   "name": "my-astro-site",
   // account_id is taken from your `wrangler login` session / the Deploy-to-Cloudflare
   // flow. For multi-account setups, set CLOUDFLARE_ACCOUNT_ID or add "account_id" here.
-  "main": "dist/_worker.js/index.js",
+  "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
-    "directory": "./dist"
+    "directory": "./dist/client"
   },
   // D1 database for payment records + audit logs.
   // Create with: wrangler d1 create my-astro-site-db

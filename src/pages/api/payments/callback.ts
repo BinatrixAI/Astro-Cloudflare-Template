@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { env } from "cloudflare:workers";
 import { getPurchase, updatePurchaseStatus, logEvent } from "@/lib/db";
 import { getProvider } from "@/lib/payments";
 
@@ -11,8 +12,7 @@ function amountMatches(cbAmount: string | null, storedMinor: number): boolean {
   return Number.isFinite(n) && n === storedMinor;
 }
 
-export const GET: APIRoute = async ({ url, locals, redirect }) => {
-  const env = locals.runtime.env;
+export const GET: APIRoute = async ({ url, redirect }) => {
   const params = url.searchParams;
 
   const order = params.get("Order") || params.get("Fild1") || "";

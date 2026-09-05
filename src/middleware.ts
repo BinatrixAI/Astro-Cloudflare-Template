@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { env } from "cloudflare:workers";
 
 /** Constant-time-ish string compare to avoid trivial timing leaks. */
 function safeEqual(a: string, b: string): boolean {
@@ -22,7 +23,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  const env = context.locals.runtime.env;
   const expectedUser = env.ADMIN_USER;
   const expectedPass = env.ADMIN_PASSWORD;
   if (!expectedUser || !expectedPass) {

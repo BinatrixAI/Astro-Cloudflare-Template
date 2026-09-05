@@ -2,9 +2,11 @@
 import Layout from "@/layouts/Layout.astro";
 import { getPurchase } from "@/lib/db";
 import { formatPrice } from "@/lib/products";
+import { env } from "cloudflare:workers";
+
+export const prerender = false;
 
 const order = Astro.url.searchParams.get("order") ?? "";
-const env = Astro.locals.runtime.env;
 const purchase = order ? await getPurchase(env.DB, order) : null;
 ---
 

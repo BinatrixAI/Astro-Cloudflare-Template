@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { mockSign } from "@/lib/payments";
+import { env } from "cloudflare:workers";
 
 export const prerender = false;
 
@@ -11,7 +12,6 @@ const name = url.searchParams.get("name") ?? "";
 const info = url.searchParams.get("info") ?? "";
 const sig = url.searchParams.get("sig") ?? "";
 
-const env = Astro.locals.runtime.env;
 const expected = order && amount ? await mockSign(env.MOCK_SECRET, order, amount) : "";
 const valid = sig.length > 0 && sig === expected;
 

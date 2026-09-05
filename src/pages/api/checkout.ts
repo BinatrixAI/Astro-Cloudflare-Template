@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
+import { env } from "cloudflare:workers";
 import { cartCheckoutSchema } from "@/lib/validation";
 import { getPriceableItem } from "@/lib/catalog";
 import { formatAmount } from "@/lib/products";
@@ -15,8 +16,7 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
-  const env = locals.runtime.env;
+export const POST: APIRoute = async ({ request }) => {
 
   let raw: unknown;
   try {
