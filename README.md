@@ -50,7 +50,14 @@ After the first deploy: run `npm run db:migrate` to apply the payments schema, a
 domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The repository must be
 **public** for others to use the button.
 
+> **Set the deploy command.** Astro's Cloudflare adapter builds the Worker entry and emits its own
+> config at `dist/server/wrangler.json`. In your Workers Builds settings, set the **deploy command**
+> to `npx wrangler deploy -c dist/server/wrangler.json` — a plain `wrangler deploy` cannot resolve
+> the `main` entry in `wrangler.jsonc`. See [Deploying](#deploying).
+
 ## Quick Start
+
+> **Requires Node >= 22.12** (Astro 7). Check with `node --version`.
 
 1. **Create your project from template** (see above)
 2. **Install dependencies**
@@ -80,10 +87,33 @@ domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The reposit
 | `npm run dev` | Start dev server at localhost:4321 (local D1 + `.dev.vars`) |
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
-| `npm run deploy` | Build and deploy to Cloudflare |
-| `npm run cf-types` | Regenerate `worker-configuration.d.ts` after editing `wrangler.jsonc` |
+| `npm run deploy` | Build and deploy to Cloudflare (see [Deploying](#deploying)) |
+| `npm run typecheck` | Type-check everything, `.astro` files included (`astro check`) |
+| `npm run cf-types` | Regenerate `worker-configuration.d.ts`. Optional — this template types bindings by hand in `src/env.d.ts` and deliberately keeps the generated file out of `tsconfig` (see [Environment & Secrets](#environment--secrets)) |
 | `npm run db:migrate:local` | Apply D1 migrations to the local database |
 | `npm run db:migrate` | Apply D1 migrations to the remote (production) database |
+
+## Deploying
+
+```bash
+npm run deploy     # astro build && wrangler deploy -c dist/server/wrangler.json
+```
+
+The Cloudflare adapter compiles the Worker into `dist/server/` and emits a derived Wrangler
+config alongside it (`dist/server/wrangler.json`) carrying your `d1_databases`, `vars` and the
+resolved entrypoint. **Deploys go through that file.** `main` in `wrangler.jsonc` is a bare
+package specifier that `@cloudflare/vite-plugin` resolves during build and dev, but which
+`wrangler deploy` cannot resolve on its own:
+
+```
+✘ The entry-point file at "@astrojs/cloudflare/entrypoints/server" was not found.
+```
+
+Note that `wrangler deploy --dry-run` *does* resolve it, so a dry run alone will not catch this.
+
+Build output is split: `dist/client/` (static assets, served by the `ASSETS` binding) and
+`dist/server/` (the Worker). There is no `_worker.js` or `_routes.json` any more — those were
+Pages artifacts, and Pages support was dropped in adapter v13.
 
 ## Project Structure
 
@@ -95,7 +125,7 @@ domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The reposit
 │   │   ├── LandingPage.tsx      # Demo landing page
 │   │   ├── CheckoutForm.tsx     # Payment buyer form (shadcn + react-hook-form + zod)
 │   │   └── ui/
-│   │       ├── curved-menu.tsx
+│   │       ├── curved-menu.tsx  # Motion navbar-menu alternative (not wired up by default)
 │   │       └── shadcn/          # button, card, input, badge, label, select, form
 │   ├── content/
 │   │   ├── site.json           # Navigation, hero, features, footer copy
@@ -109,6 +139,7 @@ domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The reposit
 │   │   ├── validation.ts       # zod schemas (buyer + cart)
 │   │   ├── db.ts               # D1 helpers (purchases, payment_events)
 │   │   └── payments/           # Provider abstraction: mock | yaad
+│   ├── env.d.ts                # ENV bindings/secrets type + cloudflare:workers module
 │   ├── middleware.ts           # Basic-Auth guard for /admin
 │   ├── pages/
 │   │   ├── index.astro
@@ -117,7 +148,8 @@ domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The reposit
 │   │   ├── admin/index.astro   # Purchases + audit log (Basic Auth)
 │   │   └── api/checkout.ts, api/payments/callback.ts
 │   └── styles/global.css, hero.ts
-├── astro.config.mjs · components.json · wrangler.jsonc · CLAUDE.md · docs/UAT.md
+├── astro.config.mjs · components.json · wrangler.jsonc · CLAUDE.md · CHANGELOG.md · docs/UAT.md
+└── dist/                    # build output: client/ (assets) + server/ (Worker + wrangler.json)
 ```
 
 ## Creating New Pages
@@ -182,10 +214,29 @@ with Yaad test cards.
 
 ## Environment & Secrets
 
-Bindings/secrets are accessed via `import { env } from "cloudflare:workers"` (typed as `ENV` in `src/env.d.ts`).
-`Astro.locals.runtime.env` was removed in `@astrojs/cloudflare` v13 and throws at runtime.
-Set locally in `.dev.vars` (copy from `.dev.vars.example`); set in production with `wrangler secret put <NAME>`
-(or `vars` in `wrangler.jsonc` for non-secrets). Client-exposed values use the `PUBLIC_` prefix and `import.meta.env`.
+Bindings and secrets are read from the workerd module, anywhere on the server — middleware, API
+routes, `.astro` frontmatter:
+
+```ts
+import { env } from "cloudflare:workers";
+const rows = await env.DB.prepare("SELECT 1").all();
+```
+
+They are typed as `ENV` in `src/env.d.ts`. Set them locally in `.dev.vars` (copy from
+`.dev.vars.example`) and in production with `wrangler secret put <NAME>` — or as `vars` in
+`wrangler.jsonc` for non-secrets. Client-exposed values use the `PUBLIC_` prefix and
+`import.meta.env`.
+
+> **Upgrading from v2?** `Astro.locals.runtime.env` was removed in `@astrojs/cloudflare` v13 and
+> now **throws at runtime** — your build stays green and every route 500s. Also:
+> `runtime.cf` → `Astro.request.cf`, `runtime.caches` → the global `caches`, and `runtime`
+> (ExecutionContext) → `Astro.locals.cfContext`.
+
+> **Don't wire up the generated worker types.** `src/env.d.ts` declares `ENV` by hand on purpose.
+> Adding `/// <reference types="@cloudflare/workers-types" />`, or putting the generated
+> `worker-configuration.d.ts` into `tsconfig`, pulls in the global workerd type set — which
+> redeclares DOM globals and breaks the React/Motion types (`AnimationEvent`,
+> `onAnimationStart`). `src/env.d.ts` carries a one-line regression check.
 
 | Name | Where | Purpose |
 |------|-------|---------|
