@@ -10,7 +10,7 @@ export const cartItemSchema = z.object({
 export const buyerSchema = z.object({
   name: z.string().min(1, "First name is required").max(100),
   lname: z.string().min(1, "Last name is required").max(100),
-  email: z.string().email("Enter a valid email").max(200),
+  email: z.email("Enter a valid email").max(200),
   phone: z
     .string()
     .min(6, "Enter a valid phone number")

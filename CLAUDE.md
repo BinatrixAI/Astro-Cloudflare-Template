@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-[PROJECT_NAME] - Built with Astro 5 + React 19, styled with Tailwind CSS 4 + HeroUI v3 + shadcn/ui, animated with Motion (Framer Motion), and deployed to Cloudflare Workers.
+[PROJECT_NAME] - Built with Astro 7 + React 19, styled with Tailwind CSS 4 + HeroUI v3 + shadcn/ui, animated with Motion, and deployed to Cloudflare Workers.
 
 ## Commands
 
@@ -21,7 +21,8 @@ npm run db:migrate      # Apply D1 migrations to the remote (production) databas
 npx shadcn@latest add [component-name]
 
 # Local testing with Wrangler
-npx wrangler pages dev ./dist --port 8799
+# (Pages-style `wrangler pages dev` no longer applies — adapter 13+ dropped Pages
+# support and `astro dev` already runs the real workerd runtime.)
 ```
 
 ## UI libraries — when to use which (decision matrix)
@@ -38,7 +39,7 @@ Rules of thumb:
 - **Forms are always shadcn** (Form + react-hook-form + zod). The payment checkout form uses this stack.
 - **App chrome / overlays are HeroUI.**
 - Theming is unified on the shadcn token set (`--background`, `--card`, `--border`, …). Custom utilities like `.glass-card` use these tokens (via `color-mix`) so they render correctly regardless of which library is on the page — they no longer depend on `--heroui-*` vars.
-- `CurvedMenu` (`src/components/ui/curved-menu.tsx`) is a deliberate Motion-based workaround for HeroUI's navbar-menu toggle; re-evaluate on the next HeroUI bump.
+- `CurvedMenu` (`src/components/ui/curved-menu.tsx`) is a Motion-based alternative to HeroUI's navbar-menu toggle. It is currently **not imported anywhere** — wire it up or delete it.
 - Only stable per-package HeroUI deps are installed (`@heroui/button`, `@heroui/card`, `@heroui/navbar`, `@heroui/system`, `@heroui/theme`, plus `chip`/`divider`/`link` for the matrix). The beta `@heroui/react` / `@heroui/styles` meta packages were removed.
 
 ## Deployment
@@ -54,7 +55,7 @@ Rules of thumb:
 - `PUBLIC_CTA_URL` - Call-to-action booking URL
 - `PUBLIC_BASE_URL` - Site origin, used to build Yaad callback/return URLs
 
-**Server vars/secrets** — set in `wrangler.jsonc` `vars` (non-secret) or with `wrangler secret put <NAME>` (secret), and in `.dev.vars` (local; gitignored). Accessed via `Astro.locals.runtime.env`:
+**Server vars/secrets** — set in `wrangler.jsonc` `vars` (non-secret) or with `wrangler secret put <NAME>` (secret), and in `.dev.vars` (local; gitignored). Accessed via `import { env } from "cloudflare:workers"` (typed as `ENV` in `src/env.d.ts`):
 - `PAYMENT_PROVIDER` - `mock` (default) or `yaad`
 - `MOCK_SECRET` - HMAC key for the mock provider's signed links
 - `YAAD_MASOF` - Yaad Sarig / Hyp terminal number (only when provider=yaad)
@@ -62,7 +63,23 @@ Rules of thumb:
 - `YAAD_KEY` - Yaad API signing key
 - `ADMIN_USER` / `ADMIN_PASSWORD` - HTTP Basic Auth for `/admin`
 
-Types for bindings + secrets live in `src/env.d.ts` (the `ENV` type). After editing `wrangler.jsonc`, run `npm run cf-types`.
+Types for bindings + secrets live in `src/env.d.ts` (the `ENV` type).
+
+```ts
+// Anywhere on the server — middleware, API routes, .astro frontmatter:
+import { env } from "cloudflare:workers";
+const db = env.DB;
+```
+
+> `Astro.locals.runtime.env` was removed in `@astrojs/cloudflare` v13 and now
+> **throws at runtime** — the build stays green and every route 500s instead.
+> `runtime.cf` → `Astro.request.cf`, `runtime.caches` → global `caches`,
+> `runtime` (ExecutionContext) → `Astro.locals.cfContext`.
+>
+> Do NOT add `/// <reference types="@cloudflare/workers-types" />` or put the
+> generated `worker-configuration.d.ts` into tsconfig — both pull the global
+> workerd types, which redeclare DOM globals and break the React/motion types.
+> `src/env.d.ts` carries the regression check.
 
 > Demo Yaad terminal for local testing: `YAAD_MASOF=0010131918`, `YAAD_PASSP=yaad`, `YAAD_KEY=7110eda4d09e062aa5e4a390b0a572ac0d2c0220`.
 

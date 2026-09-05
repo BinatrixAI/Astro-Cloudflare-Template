@@ -32,9 +32,6 @@ worker-configuration.d.ts
 .DS_Store
 Thumbs.db
 Desktop.ini
-# Generated dist assetsignore is covered by dist/; keep the source one in public/
-.assetsignore
-!public/.assetsignore
 
 # Claude Code - exclude runtime files, KEEP config (agents, commands, skills)
 .claude/cache/

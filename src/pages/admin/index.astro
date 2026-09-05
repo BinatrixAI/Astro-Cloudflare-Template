@@ -1,9 +1,11 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { listPurchases, listEvents } from "@/lib/db";
+import { env } from "cloudflare:workers";
+
+export const prerender = false;
 import { formatPrice } from "@/lib/products";
 
-const env = Astro.locals.runtime.env;
 const purchases = await listPurchases(env.DB, 100);
 const events = await listEvents(env.DB, 50);
 
