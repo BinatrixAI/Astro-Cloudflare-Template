@@ -19,12 +19,12 @@
 
 A production-ready template for building modern web applications with:
 
-- **Astro 5** - Server-side rendering with React islands
+- **Astro 7** - Server-side rendering with React islands (Vite 8 / Rolldown)
 - **React 19** - Interactive components
 - **Tailwind CSS 4** - Utility-first styling (CSS-first config)
 - **HeroUI v3** - Beautiful, accessible components (navbars, modals, etc.)
 - **shadcn/ui** - Customizable primitives (forms, cards, inputs, badges)
-- **Motion (Framer Motion) v12** - Smooth animations
+- **Motion v13** - Smooth animations
 - **Cloudflare Workers + D1** - Edge deployment with a SQLite database
 - **Payments** - Optional payment pages (Yaad Sarig / Hyp) with a mock provider for local testing
 
@@ -89,7 +89,7 @@ domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The reposit
 
 ```
 ├── migrations/              # D1 SQL migrations (payments schema)
-├── public/                  # Static assets (+ .assetsignore for Workers deploy)
+├── public/                  # Static assets (copied verbatim into dist/client)
 ├── src/
 │   ├── components/
 │   │   ├── LandingPage.tsx      # Demo landing page
@@ -182,7 +182,8 @@ with Yaad test cards.
 
 ## Environment & Secrets
 
-Bindings/secrets are accessed via `Astro.locals.runtime.env` (typed in `src/env.d.ts`).
+Bindings/secrets are accessed via `import { env } from "cloudflare:workers"` (typed as `ENV` in `src/env.d.ts`).
+`Astro.locals.runtime.env` was removed in `@astrojs/cloudflare` v13 and throws at runtime.
 Set locally in `.dev.vars` (copy from `.dev.vars.example`); set in production with `wrangler secret put <NAME>`
 (or `vars` in `wrangler.jsonc` for non-secrets). Client-exposed values use the `PUBLIC_` prefix and `import.meta.env`.
 
