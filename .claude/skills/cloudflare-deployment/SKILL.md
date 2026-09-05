@@ -12,7 +12,7 @@ Key settings in `wrangler.jsonc`:
 {
   "name": "my-site",
   "account_id": "YOUR_ACCOUNT_ID",
-  "main": "dist/_worker.js/index.js",
+  "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -32,7 +32,7 @@ npm run deploy
 wrangler deploy
 
 # Preview locally with Wrangler
-npx wrangler pages dev ./dist --port 8799
+npm run dev   # astro dev runs the real workerd runtime (adapter 13+)
 
 # View logs
 wrangler tail

@@ -2,36 +2,23 @@ import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
-import robotsTxt from 'astro-robots-txt';
-import critters from 'astro-critters';
-import compress from '@playform/compress';
 
 export default defineConfig({
   // TODO: Update with your domain
   site: 'https://your-domain.com',
   output: 'server',
   adapter: cloudflare({
-    // Expose local Cloudflare bindings (D1, secrets from .dev.vars) to
-    // Astro.locals.runtime.env during `astro dev`.
-    platformProxy: { enabled: true },
+    // This template renders no images through Astro's image service, so opt out
+    // of the adapter's default `cloudflare-binding` mode. Without this the build
+    // auto-provisions an IMAGES binding, which a one-click deploy would then
+    // need to satisfy.
+    imageService: 'passthrough',
   }),
+  // No sessions in this template. Without this the adapter auto-wires a
+  // Cloudflare KV session driver and provisions a SESSION binding.
+  session: false,
   integrations: [
     react(),
-    robotsTxt({
-      host: true,
-      sitemap: false, // Enable when you add @astrojs/sitemap
-      policy: [
-        {
-          userAgent: '*',
-          allow: '/',
-          disallow: ['/api/', '/admin/'],
-        },
-      ],
-    }),
-    // Critters inlines critical CSS for faster FCP
-    critters(),
-    // Compress must be last - compresses CSS, HTML, JS, images, SVG, JSON
-    compress(),
   ],
   vite: {
     plugins: [tailwindcss()],

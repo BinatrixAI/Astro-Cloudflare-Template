@@ -225,7 +225,7 @@ site: 'https://your-domain.com',
 Update the project description on the first line:
 
 ```markdown
-[PROJECT_NAME] - Built with Astro 5 + React 19...
+[PROJECT_NAME] - Built with Astro 7 + React 19...
 ```
 
 Also update any project-specific sections (deployment URL, environment variables, etc.)

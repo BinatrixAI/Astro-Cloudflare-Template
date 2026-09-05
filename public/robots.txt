@@ -1,0 +1,7 @@
+# TODO: uncomment and set your domain once you add a sitemap
+# Sitemap: https://your-domain.com/sitemap-index.xml
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
