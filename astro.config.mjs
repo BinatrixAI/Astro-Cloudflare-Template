@@ -2,7 +2,6 @@ import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
-// import compress from '@playform/compress';
 
 export default defineConfig({
   // TODO: Update with your domain
@@ -20,9 +19,6 @@ export default defineConfig({
   session: false,
   integrations: [
     react(),
-    // TEMPORARILY DISABLED for the Astro 7 bump — re-enabled in the next commit
-    // once the new dist layout is known. Compress must be last.
-    // compress(),
   ],
   vite: {
     plugins: [tailwindcss()],
