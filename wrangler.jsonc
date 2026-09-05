@@ -4,6 +4,11 @@
   "name": "my-astro-site",
   // account_id is taken from your `wrangler login` session / the Deploy-to-Cloudflare
   // flow. For multi-account setups, set CLOUDFLARE_ACCOUNT_ID or add "account_id" here.
+  // The Astro adapter builds the real Worker entry and emits a derived config at
+  // dist/server/wrangler.json (main: entry.mjs, assets: ../client). Deploys go
+  // through THAT file — see the "deploy" script — because `wrangler deploy`
+  // cannot resolve this bare package specifier on its own. This entry exists so
+  // @cloudflare/vite-plugin can resolve the entrypoint during build and dev.
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
@@ -33,7 +38,10 @@
   //   { "pattern": "your-domain.com", "custom_domain": true },
   //   { "pattern": "www.your-domain.com/*", "zone_name": "your-domain.com" }
   // ],
-  // Cloudflare Workers Builds configuration
+  // Cloudflare Workers Builds: build command. NOTE — if you deploy via Workers
+  // Builds or the Deploy button, set the DEPLOY command to
+  // `npx wrangler deploy -c dist/server/wrangler.json`; a plain `wrangler deploy`
+  // against this file cannot resolve "main" above.
   "build": {
     "command": "npm run build"
   },
