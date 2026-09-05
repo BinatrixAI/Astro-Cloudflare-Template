@@ -2,8 +2,6 @@ import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
-import robotsTxt from 'astro-robots-txt';
-import critters from 'astro-critters';
 import compress from '@playform/compress';
 
 export default defineConfig({
@@ -17,19 +15,6 @@ export default defineConfig({
   }),
   integrations: [
     react(),
-    robotsTxt({
-      host: true,
-      sitemap: false, // Enable when you add @astrojs/sitemap
-      policy: [
-        {
-          userAgent: '*',
-          allow: '/',
-          disallow: ['/api/', '/admin/'],
-        },
-      ],
-    }),
-    // Critters inlines critical CSS for faster FCP
-    critters(),
     // Compress must be last - compresses CSS, HTML, JS, images, SVG, JSON
     compress(),
   ],
