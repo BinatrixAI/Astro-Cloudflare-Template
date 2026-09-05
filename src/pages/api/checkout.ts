@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { z } from "zod";
 import { cartCheckoutSchema } from "@/lib/validation";
 import { getPriceableItem } from "@/lib/catalog";
 import { formatAmount } from "@/lib/products";
@@ -26,7 +27,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const parsed = cartCheckoutSchema.safeParse(raw);
   if (!parsed.success) {
-    return json({ error: "Validation failed", issues: parsed.error.flatten() }, 400);
+    return json({ error: "Validation failed", issues: z.flattenError(parsed.error) }, 400);
   }
   const input = parsed.data;
 
