@@ -3,10 +3,12 @@ import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@heroui/navbar";
 import { motion } from "motion/react";
-import siteContent from "@/content/site.json";
+import type siteContent from "@/content/site.json";
 
-export default function LandingPage() {
-  const { navigation, hero, features, footer } = siteContent;
+export type LandingContent = typeof siteContent;
+
+export default function LandingPage({ content }: { content: LandingContent }) {
+  const { navigation, hero, features, footer } = content;
 
   return (
     <HeroUIProvider>

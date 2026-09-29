@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request }) => {
   let currency = "ILS";
   const lines: { id: string; name: string; qty: number; unitPrice: number; lineTotal: number }[] = [];
   for (const item of input.items) {
-    const priceable = getPriceableItem(item.id);
+    const priceable = await getPriceableItem(item.id);
     if (!priceable) {
       return json({ error: `Unknown item: ${item.id}` }, 404);
     }

@@ -8,5 +8,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "*.config.*"]
+  "include": ["src/**/*", "*.config.*", "emdash-env.d.ts"]
 }

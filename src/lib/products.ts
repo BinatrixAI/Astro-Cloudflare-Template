@@ -1,4 +1,4 @@
-import catalog from "@/content/products.json";
+import { getEmDashEntry } from "emdash";
 
 export interface Product {
   id: string;
@@ -12,14 +12,21 @@ export interface Product {
   maxQty?: number;
 }
 
-const PRODUCTS: Product[] = catalog.products as Product[];
-
-export function listProducts(): Product[] {
-  return PRODUCTS;
-}
-
-export function getProduct(id: string): Product | undefined {
-  return PRODUCTS.find((p) => p.id === id);
+/** Look up a published product in the CMS `products` collection (slug = id). */
+export async function getProduct(id: string): Promise<Product | undefined> {
+  const { entry, error } = await getEmDashEntry("products", id);
+  if (error) throw error;
+  if (!entry) return undefined;
+  const d = entry.data;
+  return {
+    id,
+    name: d.name,
+    description: d.description ?? "",
+    price: d.price,
+    currency: d.currency ?? "ILS",
+    image: d.image?.src ?? null,
+    maxQty: d.max_qty ?? 1,
+  };
 }
 
 /** Format minor units to a major-unit string, e.g. 5000 -> "50.00". */

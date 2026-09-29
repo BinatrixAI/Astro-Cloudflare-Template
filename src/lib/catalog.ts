@@ -12,12 +12,12 @@ export interface PriceableItem {
 }
 
 /**
- * Resolve a priceable item by id from the product catalog (products.json).
+ * Resolve a priceable item by id from the product catalog (EmDash `products`).
  * Single resolver → one server-side pricing path for all checkouts. Extend this
  * to merge other catalogs (e.g. event tickets) when needed.
  */
-export function getPriceableItem(id: string): PriceableItem | undefined {
-  const product: Product | undefined = getProduct(id);
+export async function getPriceableItem(id: string): Promise<PriceableItem | undefined> {
+  const product: Product | undefined = await getProduct(id);
   if (!product) return undefined;
   return {
     id: product.id,

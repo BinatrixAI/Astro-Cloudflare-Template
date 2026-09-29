@@ -6,7 +6,7 @@ real gateway. Swapping to real Yaad Sarig / Hyp is a one-flag change (see the bo
 
 - **Provider:** `PAYMENT_PROVIDER=mock` (default). The mock "signs" links with an HMAC over
   `order|amount` (`MOCK_SECRET`), so forged callbacks fail verification — just like the real gateway.
-- **Demo product:** `starter` in `src/content/products.json` (₪50). The flow is identical for any product.
+- **Demo product:** `starter` in the CMS Products collection (₪50; seeded as sample content). The flow is identical for any product.
 
 ## Preconditions
 

@@ -1,0 +1,322 @@
+{
+  "$schema": "https://emdashcms.com/seed.schema.json",
+  "version": "1",
+  "meta": {
+    "name": "Astro Cloudflare Template",
+    "description": "Landing page, products, posts and pages"
+  },
+  "settings": {
+    "title": "My Site",
+    "tagline": "Built with Astro + React + HeroUI + Cloudflare Workers"
+  },
+  "collections": [
+    {
+      "slug": "posts",
+      "label": "Posts",
+      "labelSingular": "Post",
+      "supports": [
+        "drafts",
+        "revisions",
+        "scheduling",
+        "search",
+        "seo"
+      ],
+      "urlPattern": "/blog/{slug}",
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "featured_image",
+          "label": "Featured Image",
+          "type": "image"
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "searchable": true
+        },
+        {
+          "slug": "excerpt",
+          "label": "Excerpt",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "slug": "pages",
+      "label": "Pages",
+      "labelSingular": "Page",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search",
+        "seo"
+      ],
+      "urlPattern": "/{slug}",
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "searchable": true
+        }
+      ]
+    },
+    {
+      "slug": "landing",
+      "label": "Landing page",
+      "labelSingular": "Landing page",
+      "description": "Home page texts. Edit the single 'home' entry.",
+      "routable": false,
+      "titleField": "hero_title",
+      "admin": {
+        "quickCreate": false
+      },
+      "fields": [
+        {
+          "slug": "hero_title",
+          "label": "Hero title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "slug": "hero_subtitle",
+          "label": "Hero subtitle",
+          "type": "text"
+        },
+        {
+          "slug": "hero_cta_label",
+          "label": "Hero button label",
+          "type": "string"
+        },
+        {
+          "slug": "hero_cta_href",
+          "label": "Hero button link",
+          "type": "url"
+        },
+        {
+          "slug": "nav_cta_label",
+          "label": "Header button label",
+          "type": "string"
+        },
+        {
+          "slug": "nav_cta_href",
+          "label": "Header button link",
+          "type": "url"
+        },
+        {
+          "slug": "features_title",
+          "label": "Features title",
+          "type": "string"
+        },
+        {
+          "slug": "features",
+          "label": "Features",
+          "type": "repeater",
+          "validation": {
+            "subFields": [
+              {
+                "slug": "title",
+                "label": "Title",
+                "type": "string",
+                "required": true
+              },
+              {
+                "slug": "description",
+                "label": "Description",
+                "type": "text"
+              }
+            ]
+          }
+        },
+        {
+          "slug": "footer_copyright",
+          "label": "Footer copyright",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "slug": "products",
+      "label": "Products",
+      "labelSingular": "Product",
+      "description": "Checkout catalog. The slug is the product id used in /checkout/<slug>. Price is in minor units (agorot/cents): 5000 = 50.00.",
+      "supports": [
+        "drafts",
+        "revisions"
+      ],
+      "titleField": "name",
+      "fields": [
+        {
+          "slug": "name",
+          "label": "Name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "slug": "description",
+          "label": "Description",
+          "type": "text"
+        },
+        {
+          "slug": "price",
+          "label": "Price (minor units)",
+          "type": "integer",
+          "required": true,
+          "validation": {
+            "min": 0
+          }
+        },
+        {
+          "slug": "currency",
+          "label": "Currency",
+          "type": "select",
+          "required": true,
+          "defaultValue": "ILS",
+          "validation": {
+            "options": [
+              "ILS",
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          }
+        },
+        {
+          "slug": "image",
+          "label": "Image",
+          "type": "image"
+        },
+        {
+          "slug": "max_qty",
+          "label": "Max quantity per order",
+          "type": "integer",
+          "defaultValue": 1,
+          "validation": {
+            "min": 1
+          }
+        }
+      ]
+    }
+  ],
+  "taxonomies": [
+    {
+      "name": "category",
+      "label": "Categories",
+      "labelSingular": "Category",
+      "hierarchical": true,
+      "collections": [
+        "posts"
+      ]
+    },
+    {
+      "name": "tag",
+      "label": "Tags",
+      "labelSingular": "Tag",
+      "hierarchical": false,
+      "collections": [
+        "posts"
+      ]
+    }
+  ],
+  "menus": [
+    {
+      "name": "primary",
+      "label": "Primary navigation",
+      "items": [
+        {
+          "type": "custom",
+          "label": "Home",
+          "url": "/#home",
+          "target": "_self"
+        },
+        {
+          "type": "custom",
+          "label": "Features",
+          "url": "/#features",
+          "target": "_self"
+        },
+        {
+          "type": "custom",
+          "label": "About",
+          "url": "/#about",
+          "target": "_self"
+        },
+        {
+          "type": "custom",
+          "label": "Contact",
+          "url": "/#contact",
+          "target": "_self"
+        }
+      ]
+    }
+  ],
+  "content": {
+    "landing": [
+      {
+        "id": "home",
+        "data": {
+          "hero_title": "Welcome to My Site",
+          "hero_subtitle": "A modern web application built with the latest technologies",
+          "hero_cta_label": "Get Started",
+          "hero_cta_href": "#",
+          "nav_cta_label": "Get Started",
+          "nav_cta_href": "#",
+          "features_title": "Features",
+          "features": [
+            {
+              "title": "Fast",
+              "description": "Built for performance with Astro and Cloudflare Workers"
+            },
+            {
+              "title": "Modern",
+              "description": "Using React 19, Tailwind CSS, and HeroUI components"
+            },
+            {
+              "title": "Animated",
+              "description": "Smooth animations powered by Framer Motion"
+            }
+          ],
+          "footer_copyright": "2025 My Site. All rights reserved."
+        }
+      }
+    ],
+    "products": [
+      {
+        "id": "product-starter",
+        "slug": "starter",
+        "data": {
+          "name": "Starter Package",
+          "description": "A one-time starter package. Edit it in the CMS under Products.",
+          "price": 5000,
+          "currency": "ILS",
+          "max_qty": 1
+        }
+      },
+      {
+        "id": "product-pro",
+        "slug": "pro",
+        "data": {
+          "name": "Pro Package",
+          "description": "The pro tier with everything included.",
+          "price": 19900,
+          "currency": "ILS",
+          "max_qty": 1
+        }
+      }
+    ]
+  }
+}

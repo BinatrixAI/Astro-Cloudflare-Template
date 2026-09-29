@@ -1,9 +1,50 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import LandingPage from "@/components/LandingPage";
-import siteContent from "@/content/site.json";
+import LandingPage, { type LandingContent } from "@/components/LandingPage";
+import fallback from "@/content/site.json";
+import { getEmDashEntry, getMenu, getSiteSettings } from "emdash";
+
+// CMS content (edited at /_emdash/admin). site.json is only the fallback for a
+// fresh deploy before the setup wizard / sample content has run.
+const [{ entry }, menu, settings] = await Promise.all([
+  getEmDashEntry("landing", "home"),
+  getMenu("primary"),
+  getSiteSettings(),
+]);
+const d = entry?.data;
+
+const content: LandingContent = {
+  meta: {
+    title: settings.title ?? fallback.meta.title,
+    description: settings.tagline ?? fallback.meta.description,
+  },
+  navigation: {
+    logo: settings.title ?? fallback.navigation.logo,
+    links: menu?.items.length
+      ? menu.items.map((i) => ({ label: i.label, href: i.url }))
+      : fallback.navigation.links,
+    cta: {
+      label: d?.nav_cta_label ?? fallback.navigation.cta.label,
+      href: d?.nav_cta_href ?? fallback.navigation.cta.href,
+    },
+  },
+  hero: d
+    ? {
+        title: d.hero_title,
+        subtitle: d.hero_subtitle ?? "",
+        cta: { label: d.hero_cta_label ?? "", href: d.hero_cta_href ?? "#" },
+      }
+    : fallback.hero,
+  features: d
+    ? {
+        title: d.features_title ?? "",
+        items: (d.features ?? []).map((f) => ({ title: f.title, description: f.description ?? "" })),
+      }
+    : fallback.features,
+  footer: { copyright: d?.footer_copyright ?? fallback.footer.copyright },
+};
 ---
 
-<Layout title={siteContent.meta.title} description={siteContent.meta.description}>
-  <LandingPage client:load />
+<Layout title={content.meta.title} description={content.meta.description}>
+  <LandingPage client:load content={content} />
 </Layout>
