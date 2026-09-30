@@ -53,6 +53,9 @@
   },
   // Custom domain — left commented so one-click / first deploys go to *.workers.dev.
   // Uncomment and set your domain after the first deploy.
+  // Once a custom domain is live, set "workers_dev": false (or add the workers.dev
+  // host to the Access app): an Access app on your domain does NOT protect
+  // <worker>.workers.dev/_emdash/*.
   // "routes": [
   //   { "pattern": "your-domain.com", "custom_domain": true },
   //   { "pattern": "www.your-domain.com/*", "zone_name": "your-domain.com" }

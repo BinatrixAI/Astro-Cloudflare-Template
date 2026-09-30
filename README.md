@@ -52,6 +52,12 @@ After the first deploy: run `npm run db:migrate` to apply the payments schema, a
 domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The repository must be
 **public** for others to use the button.
 
+> **Before the first deploy, set up the CMS login** (see [CMS](#cms-emdash)): set `siteUrl` and
+> `teamDomain` in `astro.config.mjs` and create the Cloudflare Access app. Until the CMS setup
+> wizard has run, `/_emdash/admin/setup` is reachable without logging in. With `access()` auth
+> that only lets a visitor apply the seed and set the title and tagline, but it is still an open
+> write. EmDash's production setup also **refuses to run without `siteUrl`**.
+
 > **Set the deploy command.** Astro's Cloudflare adapter builds the Worker entry and emits its own
 > config at `dist/server/wrangler.json`. In your Workers Builds settings, set the **deploy command**
 > to `npx wrangler deploy -c dist/server/wrangler.json` — a plain `wrangler deploy` cannot resolve
@@ -70,7 +76,7 @@ domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The reposit
 4. **Update configuration**
    - `package.json` - `name`
    - `wrangler.jsonc` - `name` (and D1 `database_id` once created; uncomment `routes` to add a custom domain)
-   - `astro.config.mjs` - `site` URL
+   - `astro.config.mjs` - `site` URL, and EmDash `siteUrl` + Access `teamDomain` (see [CMS](#cms-emdash))
    - `CLAUDE.md` - project description
 5. **Local env** (optional, for payments/admin): `cp .dev.vars.example .dev.vars` and fill values.
 6. **Start development**
@@ -212,13 +218,27 @@ texts and the two demo products — is applied when the admin picks it in the se
 > Editors can change live prices. The checkout still recomputes every total server-side from the
 > CMS, so the client can't — but anyone with CMS access can.
 
-**Login = Cloudflare Access** (local dev falls back to passkeys):
-1. Zero Trust → Access → Applications → add a self-hosted app for **`<your-domain>/_emdash/*`**
+**Login = Cloudflare Access** (local dev falls back to passkeys). Do this **before the first
+deploy**, or immediately after it: until the setup wizard has run, it is open to anyone.
+1. Set `siteUrl` in `astro.config.mjs` (inside `emdash({...})`) to your public origin. Production
+   setup fails with *"Set siteUrl or EMDASH_SITE_URL"* without it, because EmDash does not read
+   Astro's `site`. An `EMDASH_SITE_URL` var in `wrangler.jsonc` works too.
+2. Zero Trust → Access → Applications → add a self-hosted app for **`<your-domain>/_emdash/*`**
    (the whole prefix, not just `/admin`) with a policy that only admits your editors.
-2. Set `teamDomain` in `astro.config.mjs` to your `<team>.cloudflareaccess.com`.
-3. `wrangler secret put CF_ACCESS_AUDIENCE` with the app's **Application Audience (AUD) tag**.
+3. Set `teamDomain` in `astro.config.mjs` to your `<team>.cloudflareaccess.com`.
+4. `wrangler secret put CF_ACCESS_AUDIENCE` with the app's **Application Audience (AUD) tag**.
 
-Everyone the Access policy lets in becomes an **Admin** (`defaultRole: 50`) — keep the policy tight.
+Everyone the Access policy lets in becomes an **Admin** (`defaultRole: 50`), so keep the policy
+tight. An example that works well:
+- **Login method:** your identity provider, added under Zero Trust → Settings → Authentication.
+  For example, an Authentik (or other) OIDC provider with *Instant Auth* / auto-redirect on the app.
+- **Policy** (action *Allow*): *Include* → Emails → `owner@example.com` (add each editor), **and**
+  *Require* → Login Methods → that IdP. The Require rule stops the same email getting in through
+  a weaker method such as a one-time PIN.
+
+> **`*.workers.dev` is not covered** by an Access app on your custom domain:
+> `<worker>.workers.dev/_emdash/*` stays reachable. Once a custom domain is set, either set
+> `"workers_dev": false` in `wrangler.jsonc` or add the workers.dev hostname to the Access app.
 
 **Encryption key:** generate with `npx emdash secrets generate`, store as the
 `EMDASH_ENCRYPTION_KEY` secret and back it up — losing it makes encrypted plugin settings unreadable.
@@ -226,6 +246,15 @@ Everyone the Access policy lets in becomes an **Admin** (`defaultRole: 50`) — 
 **Local dev:** `npm run dev`, then open
 `http://localhost:4321/_emdash/api/setup/dev-bypass?redirect=/_emdash/admin` to skip the wizard
 (dev-only) or go through `/_emdash/admin` with a passkey.
+
+**CMS gotchas:**
+- Seed `$media` URLs must be **public http(s)** URLs. EmDash's SSRF guard rejects `localhost` and
+  files in `public/`.
+- The admin's Media library page has no upload button. Upload through a field's image picker.
+- The first admin visit shows a one-time **Welcome** dialog. It blocks clicks in automated browser
+  tests until it is dismissed with **Get Started**.
+- A product's preview link opens `/checkout/<slug>`, which returns 404 for drafts. Checkout never
+  prices or sells an unpublished (preview) entry.
 
 ## Payments (optional)
 
@@ -246,6 +275,10 @@ wrangler d1 create my-astro-site-db          # paste database_id into wrangler.j
 npm run db:migrate:local                       # local
 npm run db:migrate                             # remote
 ```
+
+> Local dev keys its D1 database by `database_id`. **Pasting a real id switches `npm run dev` to a
+> new, empty local database**, so re-run `npm run db:migrate:local` and the CMS dev-bypass setup
+> afterwards.
 
 **Go live with Yaad:** set `PAYMENT_PROVIDER=yaad`, add `YAAD_MASOF/PASSP/KEY` secrets, and point
 the Hyp terminal's return URL at `<PUBLIC_BASE_URL>/api/payments/callback`. Then re-run the UAT
@@ -291,8 +324,8 @@ They are typed as `ENV` in `src/env.d.ts`. Set them locally in `.dev.vars` (copy
 
 ### HeroUI (rich, pre-styled)
 ```tsx
-import { Button } from "@heroui/button";
 import { Navbar, NavbarBrand, NavbarContent } from "@heroui/navbar";
+import { Chip } from "@heroui/chip";
 ```
 Best for: navbars, modals, dropdowns, complex interactive chrome.
 
@@ -310,6 +343,12 @@ import { motion } from "motion/react";
 
 **Which to use?** HeroUI = app chrome/overlays · shadcn = primitives & forms · Motion = animation.
 Don't mix a HeroUI and a shadcn `Button` in the same region. See `CLAUDE.md` for the full matrix.
+
+**In `.astro` files**, shadcn's `<Button asChild>` does nothing, because Astro passes children as a
+slot rather than a React element. Style the link directly instead:
+`<a href="…" class={cn(buttonVariants({ size: "lg" }))}>`. EmDash's `<Image>` is an Astro
+component, so cards that show CMS images belong in `.astro`; to animate that static markup with
+Motion, wrap it in a small client island.
 
 ## Theming
 
