@@ -86,9 +86,10 @@ export interface PaidUpdate {
 }
 
 /**
- * Transition a purchase to a terminal status. For `paid`, the WHERE clause only
- * matches a `pending` row, making the callback idempotent (a replayed callback
- * updates zero rows). Returns the number of rows changed.
+ * Transition a purchase. Allowed moves: `pending|failed → paid` (a verified
+ * payment wins over an earlier decline) and `pending → failed`. Anything else —
+ * a replayed callback, or a decline arriving after payment — updates zero rows,
+ * so a paid order can never be downgraded. Returns the number of rows changed.
  */
 export async function updatePurchaseStatus(
   db: D1Database,
@@ -96,7 +97,12 @@ export async function updatePurchaseStatus(
   status: PurchaseStatus,
   yaad?: PaidUpdate
 ): Promise<number> {
-  const guard = status === "paid" ? `AND status = 'pending'` : ``;
+  const guard =
+    status === "paid"
+      ? `AND status IN ('pending', 'failed')`
+      : status === "failed"
+        ? `AND status = 'pending'`
+        : ``;
   const res = await db
     .prepare(
       `UPDATE purchases

@@ -1,0 +1,17 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { decodeSlug, getEmDashEntry } from "emdash";
+import { Image, PortableText } from "emdash/ui";
+
+const { entry: post, error } = await getEmDashEntry("posts", decodeSlug(Astro.params.slug) ?? "");
+if (error) throw error;
+if (!post) return new Response(null, { status: 404 });
+---
+
+<Layout title={post.data.title} description={post.data.excerpt ?? undefined}>
+  <article class="mx-auto max-w-3xl px-6 py-12 md:py-24">
+    <h1 class="mb-8 text-4xl font-bold">{post.data.title}</h1>
+    {post.data.featured_image && <Image image={post.data.featured_image} class="mb-8 rounded-lg" />}
+    <div class="cms-content"><PortableText value={post.data.content} /></div>
+  </article>
+</Layout>

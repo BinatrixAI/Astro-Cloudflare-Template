@@ -4,19 +4,23 @@
   "name": "my-astro-site",
   // account_id is taken from your `wrangler login` session / the Deploy-to-Cloudflare
   // flow. For multi-account setups, set CLOUDFLARE_ACCOUNT_ID or add "account_id" here.
-  // The Astro adapter builds the real Worker entry and emits a derived config at
-  // dist/server/wrangler.json (main: entry.mjs, assets: ../client). Deploys go
-  // through THAT file — see the "deploy" script — because `wrangler deploy`
-  // cannot resolve this bare package specifier on its own. This entry exists so
-  // @cloudflare/vite-plugin can resolve the entrypoint during build and dev.
-  "main": "@astrojs/cloudflare/entrypoints/server",
+  // EmDash's Worker entry = the Astro adapter handler + a scheduled() handler
+  // (scheduled publishing, backups, maintenance — see "triggers" below).
+  // The Astro build emits a derived config at dist/server/wrangler.json
+  // (main: entry.mjs, assets: ../client). Deploys go through THAT file — see the
+  // "deploy" script — because `wrangler deploy` cannot resolve this bare package
+  // specifier on its own. This entry exists so @cloudflare/vite-plugin can
+  // resolve the entrypoint during build and dev.
+  "main": "@emdash-cms/cloudflare/worker",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist/client"
   },
-  // D1 database for payment records + audit logs.
+  // D1 database shared by payments (purchases, payment_events — migrations/ via
+  // `npm run db:migrate`) and the EmDash CMS (applies its own migrations on the
+  // first request).
   // Create with: wrangler d1 create my-astro-site-db
   // then paste the returned database_id below (TODO).
   "d1_databases": [
@@ -27,13 +31,31 @@
       "migrations_dir": "migrations"
     }
   ],
-  // Non-secret runtime vars. Secrets (MOCK_SECRET, ADMIN_*, YAAD_*) via `wrangler secret put`.
+  // CMS media library. Created on first deploy if it doesn't exist.
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "my-astro-site-media"
+    }
+  ],
+  // Edge image resizing for CMS media (the adapter adds it anyway; listed for clarity).
+  "images": {
+    "binding": "IMAGES"
+  },
+  // EmDash scheduled publishing / backups / maintenance.
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  // Non-secret runtime vars. Secrets (MOCK_SECRET, ADMIN_*, YAAD_*, CF_ACCESS_AUDIENCE, EMDASH_ENCRYPTION_KEY) via `wrangler secret put`.
   "vars": {
     "PAYMENT_PROVIDER": "mock",
     "PUBLIC_BASE_URL": "https://your-domain.com"
   },
   // Custom domain — left commented so one-click / first deploys go to *.workers.dev.
   // Uncomment and set your domain after the first deploy.
+  // Once a custom domain is live, set "workers_dev": false (or add the workers.dev
+  // host to the Access app): an Access app on your domain does NOT protect
+  // <worker>.workers.dev/_emdash/*.
   // "routes": [
   //   { "pattern": "your-domain.com", "custom_domain": true },
   //   { "pattern": "www.your-domain.com/*", "zone_name": "your-domain.com" }

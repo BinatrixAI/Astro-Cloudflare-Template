@@ -4,7 +4,7 @@ import CheckoutForm from "@/components/CheckoutForm";
 import { getProduct, formatPrice } from "@/lib/products";
 
 const { product: productId } = Astro.params;
-const product = productId ? getProduct(productId) : undefined;
+const product = productId ? await getProduct(productId) : undefined;
 
 if (!product) {
   return new Response("Product not found", { status: 404 });

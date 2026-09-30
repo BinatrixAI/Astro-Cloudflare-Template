@@ -1,7 +1,7 @@
 {
   "name": "astro-cloudflare-template",
   "type": "module",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -20,8 +20,7 @@
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.0",
     "@astrojs/react": "^6.0.5",
-    "@heroui/button": "^2.2.32",
-    "@heroui/card": "^2.2.28",
+    "@emdash-cms/cloudflare": "^1.0.1",
     "@heroui/chip": "^2.2.25",
     "@heroui/divider": "^2.2.24",
     "@heroui/link": "^2.2.26",
@@ -37,6 +36,7 @@
     "astro-seo": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "emdash": "^1.0.1",
     "lucide-react": "^1.41.0",
     "motion": "^13.2.0",
     "react": "^19.2.8",
@@ -54,5 +54,8 @@
     "@types/react-dom": "^19.2.7",
     "typescript": "^6.0.3",
     "wrangler": "^4.129.0"
+  },
+  "emdash": {
+    "seed": "seed/seed.json"
   }
 }

@@ -2,25 +2,52 @@ import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import emdash from 'emdash/astro';
+import { d1, r2, access } from '@emdash-cms/cloudflare';
 
 export default defineConfig({
   // TODO: Update with your domain
   site: 'https://your-domain.com',
   output: 'server',
-  adapter: cloudflare({
-    // This template renders no images through Astro's image service, so opt out
-    // of the adapter's default `cloudflare-binding` mode. Without this the build
-    // auto-provisions an IMAGES binding, which a one-click deploy would then
-    // need to satisfy.
-    imageService: 'passthrough',
-  }),
-  // No sessions in this template. Without this the adapter auto-wires a
-  // Cloudflare KV session driver and provisions a SESSION binding.
-  session: false,
+  // Default image service is `cloudflare-binding`: the adapter adds an IMAGES
+  // binding so EmDash media is resized at the edge (billed as Images transforms).
+  adapter: cloudflare(),
+  // Sessions stay on: EmDash's admin uses Astro.session, so the adapter
+  // auto-wires its KV session driver and provisions a SESSION binding.
   integrations: [
     react(),
+    // CMS admin at /_emdash/admin. Shares the payments D1 (`DB`); media in R2.
+    emdash({
+      // TODO: your site's public origin. Production setup refuses to run
+      // without it (EmDash does not read Astro's `site`); the EMDASH_SITE_URL
+      // var works too.
+      siteUrl: 'https://your-domain.com',
+      database: d1({ binding: 'DB' }),
+      storage: r2({ binding: 'MEDIA' }),
+      // Production login is Cloudflare Access only (local dev falls back to
+      // passkeys). Create an Access app covering /_emdash/* and put its AUD tag
+      // in the CF_ACCESS_AUDIENCE secret. Everyone the Access policy admits is
+      // an Admin — keep the policy tight.
+      auth: access({
+        // TODO: your Zero Trust team domain
+        teamDomain: 'YOUR_TEAM.cloudflareaccess.com',
+        audienceEnvVar: 'CF_ACCESS_AUDIENCE',
+        defaultRole: 50,
+      }),
+    }),
   ],
   vite: {
     plugins: [tailwindcss()],
+    // Pre-bundle SSR deps that Vite otherwise discovers mid-request on a cold
+    // start: it re-optimizes, reloads, and that first render fails with React's
+    // "Invalid hook call" (two React copies during the swap). The adapter's
+    // Vite environment is named `ssr`. Add any new SSR-imported package here.
+    environments: {
+      ssr: {
+        optimizeDeps: {
+          include: ['astro-seo', '@heroui/navbar', '@heroui/system', 'motion/react'],
+        },
+      },
+    },
   },
 });

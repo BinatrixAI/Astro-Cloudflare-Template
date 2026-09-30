@@ -105,3 +105,4 @@ site_assets/
 
 # Internal RU developer guide (not part of the public template)
 docs/DEVELOPER-GUIDE.ru.md
+.emdash/

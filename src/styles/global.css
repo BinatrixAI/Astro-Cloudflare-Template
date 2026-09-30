@@ -8,8 +8,10 @@
 /* HeroUI plugin */
 @plugin './hero.ts';
 
-/* HeroUI component class scanning */
-@source "../../../node_modules/@heroui/theme/dist/**/*.{js,mjs}";
+/* HeroUI component class scanning (the classes live in @heroui/theme's JS).
+   Tailwind scans this whole directory whatever the file pattern, so there is
+   no way to limit it to the installed components (~23 KB gzipped). */
+@source "../../node_modules/@heroui/theme/dist/**/*.{js,mjs}";
 
 /* Class-based dark mode */
 @custom-variant dark (&:is(.dark *));

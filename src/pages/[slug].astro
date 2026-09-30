@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { decodeSlug, getEmDashEntry } from "emdash";
+import { PortableText } from "emdash/ui";
+
+const { entry: page, error } = await getEmDashEntry("pages", decodeSlug(Astro.params.slug) ?? "");
+if (error) throw error;
+if (!page) return new Response(null, { status: 404 });
+---
+
+<Layout title={page.data.title}>
+  <article class="mx-auto max-w-3xl px-6 py-12 md:py-24">
+    <h1 class="mb-8 text-4xl font-bold">{page.data.title}</h1>
+    <div class="cms-content"><PortableText value={page.data.content} /></div>
+  </article>
+</Layout>

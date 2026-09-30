@@ -22,11 +22,16 @@ A production-ready template for building modern web applications with:
 - **Astro 7** - Server-side rendering with React islands (Vite 8 / Rolldown)
 - **React 19** - Interactive components
 - **Tailwind CSS 4** - Utility-first styling (CSS-first config)
-- **HeroUI v3** - Beautiful, accessible components (navbars, modals, etc.)
-- **shadcn/ui** - Customizable primitives (forms, cards, inputs, badges)
+- **HeroUI** - App chrome and overlays (navbar, chip, link, divider; add modal/dropdown as needed)
+- **shadcn/ui** - Customizable primitives (buttons, forms, cards, inputs, badges)
 - **Motion v13** - Smooth animations
 - **Cloudflare Workers + D1** - Edge deployment with a SQLite database
+- **EmDash CMS** - Admin at `/_emdash/admin` for landing texts, products/prices, posts, pages, menus and media (D1 + R2), behind Cloudflare Access
 - **Payments** - Optional payment pages (Yaad Sarig / Hyp) with a mock provider for local testing
+
+> **New in v3.1.0:** the EmDash CMS, a blog and CMS pages, CMS-managed products and prices, and
+> payment-callback hardening. See [CHANGELOG.md](CHANGELOG.md). Setting up the CMS login is a
+> **before-first-deploy** step; see [CMS](#cms-emdash).
 
 ## Use This Template
 
@@ -43,12 +48,19 @@ Or click **"Use this template"** on the [GitHub page](https://github.com/Binatri
 Clicking the button clones the repo to your account and deploys it. Cloudflare reads
 `wrangler.jsonc` and:
 - **provisions a D1 database** for the `DB` binding (and writes its id back to your config),
-- **prompts for secrets** listed in `.dev.vars.example` (`MOCK_SECRET`, `ADMIN_USER`, `ADMIN_PASSWORD`, and optional `YAAD_*`),
+- **provisions an R2 bucket** (`MEDIA`, CMS media) and a KV namespace (`SESSION`, CMS sessions),
+- **prompts for secrets** listed in `.dev.vars.example` (`MOCK_SECRET`, `ADMIN_USER`, `ADMIN_PASSWORD`, `EMDASH_ENCRYPTION_KEY`, `CF_ACCESS_AUDIENCE`, and optional `YAAD_*`),
 - deploys the Worker to a `*.workers.dev` URL.
 
 After the first deploy: run `npm run db:migrate` to apply the payments schema, and add a custom
 domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The repository must be
 **public** for others to use the button.
+
+> **Before the first deploy, set up the CMS login** (see [CMS](#cms-emdash)): set `siteUrl` and
+> `teamDomain` in `astro.config.mjs` and create the Cloudflare Access app. Until the CMS setup
+> wizard has run, `/_emdash/admin/setup` is reachable without logging in. With `access()` auth
+> that only lets a visitor apply the seed and set the title and tagline, but it is still an open
+> write. EmDash's production setup also **refuses to run without `siteUrl`**.
 
 > **Set the deploy command.** Astro's Cloudflare adapter builds the Worker entry and emits its own
 > config at `dist/server/wrangler.json`. In your Workers Builds settings, set the **deploy command**
@@ -68,7 +80,7 @@ domain by uncommenting `routes` in `wrangler.jsonc` (then redeploy). The reposit
 4. **Update configuration**
    - `package.json` - `name`
    - `wrangler.jsonc` - `name` (and D1 `database_id` once created; uncomment `routes` to add a custom domain)
-   - `astro.config.mjs` - `site` URL
+   - `astro.config.mjs` - `site` URL, and EmDash `siteUrl` + Access `teamDomain` (see [CMS](#cms-emdash))
    - `CLAUDE.md` - project description
 5. **Local env** (optional, for payments/admin): `cp .dev.vars.example .dev.vars` and fill values.
 6. **Start development**
@@ -118,8 +130,9 @@ Pages artifacts, and Pages support was dropped in adapter v13.
 ## Project Structure
 
 ```
-├── migrations/              # D1 SQL migrations (payments schema)
-├── public/                  # Static assets (copied verbatim into dist/client)
+├── migrations/              # D1 SQL migrations (payments schema; EmDash runs its own)
+├── public/                  # Static assets (copied verbatim into dist/client), incl. og-image.jpg
+├── seed/seed.json           # EmDash content model + sample content
 ├── src/
 │   ├── components/
 │   │   ├── LandingPage.tsx      # Demo landing page
@@ -128,13 +141,12 @@ Pages artifacts, and Pages support was dropped in adapter v13.
 │   │       ├── curved-menu.tsx  # Motion navbar-menu alternative (not wired up by default)
 │   │       └── shadcn/          # button, card, input, badge, label, select, form
 │   ├── content/
-│   │   ├── site.json           # Navigation, hero, features, footer copy
-│   │   └── products.json       # Payment catalog (id, name, price in minor units)
+│   │   └── site.json           # Landing-page fallback (live content is in the CMS)
 │   ├── icons/
 │   ├── layouts/Layout.astro    # Base layout (has a `head` slot for fonts, etc.)
 │   ├── lib/
 │   │   ├── utils.ts            # cn() helper
-│   │   ├── products.ts         # Product catalog access
+│   │   ├── products.ts         # Product lookup from the CMS (published only, never previews)
 │   │   ├── catalog.ts          # getPriceableItem() resolver
 │   │   ├── validation.ts       # zod schemas (buyer + cart)
 │   │   ├── db.ts               # D1 helpers (purchases, payment_events)
@@ -142,13 +154,15 @@ Pages artifacts, and Pages support was dropped in adapter v13.
 │   ├── env.d.ts                # ENV bindings/secrets type + cloudflare:workers module
 │   ├── middleware.ts           # Basic-Auth guard for /admin
 │   ├── pages/
-│   │   ├── index.astro
+│   │   ├── index.astro         # Landing page (CMS `landing` entry)
+│   │   ├── blog/index.astro, blog/[slug].astro   # CMS `posts`
+│   │   ├── [slug].astro        # CMS `pages`
 │   │   ├── checkout/[product].astro, success.astro, failed.astro
 │   │   ├── mock-pay.astro      # Mock "hosted payment" page (UAT)
 │   │   ├── admin/index.astro   # Purchases + audit log (Basic Auth)
 │   │   └── api/checkout.ts, api/payments/callback.ts
 │   └── styles/global.css, hero.ts
-├── astro.config.mjs · components.json · wrangler.jsonc · CLAUDE.md · CHANGELOG.md · docs/UAT.md
+├── astro.config.mjs · components.json · wrangler.jsonc · emdash-env.d.ts · CLAUDE.md · CHANGELOG.md · docs/UAT.md
 └── dist/                    # build output: client/ (assets) + server/ (Worker + wrangler.json)
 ```
 
@@ -188,6 +202,67 @@ Use shadcn primitives (`@/components/ui/shadcn`) for forms/cards and HeroUI for 
 
 > The `/new-page` Claude Code command scaffolds a page + React component for you.
 
+## CMS (EmDash)
+
+Every site ships with [EmDash](https://docs.emdashcms.com) at **`/_emdash/admin`**. It shares the
+`DB` D1 database with payments (EmDash runs its own migrations on the first request) and stores
+media in the `MEDIA` R2 bucket, resized through the `IMAGES` binding.
+
+| Collection | Used by |
+|------------|---------|
+| **Landing page** (`landing`, entry `home`) | `/` hero, features, header/footer texts |
+| **Products** (`products`) | `/checkout/<slug>` and server-side pricing in `/api/checkout` |
+| **Posts** (`posts`) | `/blog`, `/blog/<slug>` |
+| **Pages** (`pages`) | `/<slug>` |
+| Menu **primary** | Landing-page nav links |
+| Settings → title / tagline | Site name + meta description |
+
+The content model lives in `seed/seed.json` (applied on first boot; sample content — the landing
+texts and the two demo products — is applied when the admin picks it in the setup wizard).
+`src/content/site.json` is only the fallback before that. `emdash-env.d.ts` is regenerated by
+`npm run dev` whenever the model changes — commit it.
+
+> Editors can change live prices. The checkout still recomputes every total server-side from the
+> CMS, so the client can't — but anyone with CMS access can.
+
+**Login = Cloudflare Access** (local dev falls back to passkeys). Do this **before the first
+deploy**, or immediately after it: until the setup wizard has run, it is open to anyone.
+1. Set `siteUrl` in `astro.config.mjs` (inside `emdash({...})`) to your public origin. Production
+   setup fails with *"Set siteUrl or EMDASH_SITE_URL"* without it, because EmDash does not read
+   Astro's `site`. An `EMDASH_SITE_URL` var in `wrangler.jsonc` works too.
+2. Zero Trust → Access → Applications → add a self-hosted app for **`<your-domain>/_emdash/*`**
+   (the whole prefix, not just `/admin`) with a policy that only admits your editors.
+3. Set `teamDomain` in `astro.config.mjs` to your `<team>.cloudflareaccess.com`.
+4. `wrangler secret put CF_ACCESS_AUDIENCE` with the app's **Application Audience (AUD) tag**.
+
+Everyone the Access policy lets in becomes an **Admin** (`defaultRole: 50`), so keep the policy
+tight. An example that works well:
+- **Login method:** your identity provider, added under Zero Trust → Settings → Authentication.
+  For example, an Authentik (or other) OIDC provider with *Instant Auth* / auto-redirect on the app.
+- **Policy** (action *Allow*): *Include* → Emails → `owner@example.com` (add each editor), **and**
+  *Require* → Login Methods → that IdP. The Require rule stops the same email getting in through
+  a weaker method such as a one-time PIN.
+
+> **`*.workers.dev` is not covered** by an Access app on your custom domain:
+> `<worker>.workers.dev/_emdash/*` stays reachable. Once a custom domain is set, either set
+> `"workers_dev": false` in `wrangler.jsonc` or add the workers.dev hostname to the Access app.
+
+**Encryption key:** generate with `npx emdash secrets generate`, store as the
+`EMDASH_ENCRYPTION_KEY` secret and back it up — losing it makes encrypted plugin settings unreadable.
+
+**Local dev:** `npm run dev`, then open
+`http://localhost:4321/_emdash/api/setup/dev-bypass?redirect=/_emdash/admin` to skip the wizard
+(dev-only) or go through `/_emdash/admin` with a passkey.
+
+**CMS gotchas:**
+- Seed `$media` URLs must be **public http(s)** URLs. EmDash's SSRF guard rejects `localhost` and
+  files in `public/`.
+- The admin's Media library page has no upload button. Upload through a field's image picker.
+- The first admin visit shows a one-time **Welcome** dialog. It blocks clicks in automated browser
+  tests until it is dismissed with **Get Started**.
+- A product's preview link opens `/checkout/<slug>`, which returns 404 for drafts. Checkout never
+  prices or sells an unpublished (preview) entry.
+
 ## Payments (optional)
 
 Server-priced checkout → hosted payment page → verified callback → D1 records + audit log. No user accounts.
@@ -197,7 +272,7 @@ Server-priced checkout → hosted payment page → verified callback → D1 reco
   **entire** cycle locally with no gateway or credentials.
 - `yaad` — real **Yaad Sarig / Hyp** (`pay.hyp.co.il`); SIGN/VERIFY server round-trips (`src/lib/payments/yaad.ts`).
 
-**Add a payment page** = add a product to `src/content/products.json` (price in **minor units**, e.g. `5000` = ₪50). A checkout page is served at `/checkout/<id>` via `src/pages/checkout/[product].astro`. All checkouts `POST` a cart `{ items:[{id,qty}], …buyer }` to `/api/checkout`, which **recomputes the total server-side** (never trusts the client). For custom layouts, build your own form that posts the same payload (see `CheckoutForm.tsx`).
+**Add a payment page** = add a product in the CMS (**Products** at `/_emdash/admin`; the slug is the product id, price in **minor units**, e.g. `5000` = ₪50). Only published products are sold. A checkout page is served at `/checkout/<id>` via `src/pages/checkout/[product].astro`. All checkouts `POST` a cart `{ items:[{id,qty}], …buyer }` to `/api/checkout`, which **recomputes the total server-side** (never trusts the client). For custom layouts, build your own form that posts the same payload (see `CheckoutForm.tsx`).
 
 **Records & logs:** the `purchases` table (records) + `payment_events` (audit trail) in D1, viewable at `/admin` (Basic Auth). Full test plan: [`docs/UAT.md`](docs/UAT.md).
 
@@ -207,6 +282,10 @@ wrangler d1 create my-astro-site-db          # paste database_id into wrangler.j
 npm run db:migrate:local                       # local
 npm run db:migrate                             # remote
 ```
+
+> Local dev keys its D1 database by `database_id`. **Pasting a real id switches `npm run dev` to a
+> new, empty local database**, so re-run `npm run db:migrate:local` and the CMS dev-bypass setup
+> afterwards.
 
 **Go live with Yaad:** set `PAYMENT_PROVIDER=yaad`, add `YAAD_MASOF/PASSP/KEY` secrets, and point
 the Hyp terminal's return URL at `<PUBLIC_BASE_URL>/api/payments/callback`. Then re-run the UAT
@@ -245,13 +324,15 @@ They are typed as `ENV` in `src/env.d.ts`. Set them locally in `.dev.vars` (copy
 | `ADMIN_USER` / `ADMIN_PASSWORD` | secret | Basic Auth for `/admin` |
 | `YAAD_MASOF` / `YAAD_PASSP` / `YAAD_KEY` | secret | Yaad terminal (only when `PAYMENT_PROVIDER=yaad`) |
 | `PUBLIC_BASE_URL` | var | Origin for building callback URLs |
+| `CF_ACCESS_AUDIENCE` | secret | Cloudflare Access AUD tag for the CMS admin |
+| `EMDASH_ENCRYPTION_KEY` | secret | Encrypts CMS plugin secrets (back it up) |
 
 ## UI Components
 
 ### HeroUI (rich, pre-styled)
 ```tsx
-import { Button } from "@heroui/button";
 import { Navbar, NavbarBrand, NavbarContent } from "@heroui/navbar";
+import { Chip } from "@heroui/chip";
 ```
 Best for: navbars, modals, dropdowns, complex interactive chrome.
 
@@ -269,6 +350,12 @@ import { motion } from "motion/react";
 
 **Which to use?** HeroUI = app chrome/overlays · shadcn = primitives & forms · Motion = animation.
 Don't mix a HeroUI and a shadcn `Button` in the same region. See `CLAUDE.md` for the full matrix.
+
+**In `.astro` files**, shadcn's `<Button asChild>` does nothing, because Astro passes children as a
+slot rather than a React element. Style the link directly instead:
+`<a href="…" class={cn(buttonVariants({ size: "lg" }))}>`. EmDash's `<Image>` is an Astro
+component, so cards that show CMS images belong in `.astro`; to animate that static markup with
+Motion, wrap it in a small client island.
 
 ## Theming
 
