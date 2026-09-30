@@ -51,7 +51,7 @@ export default function CheckoutForm({ productId, priceLabel }: Props) {
         setSubmitting(false);
         return;
       }
-      // Redirect to the Yaad hosted payment page.
+      // Redirect to the provider's hosted payment page.
       window.location.href = data.url;
     } catch {
       setError("Network error. Please try again.");
@@ -147,7 +147,7 @@ export default function CheckoutForm({ productId, priceLabel }: Props) {
         </Button>
 
         <p className="text-center text-xs text-muted-foreground">
-          You'll be redirected to Yaad Sarig's secure payment page.
+          You'll be redirected to our secure payment page.
         </p>
       </form>
     </Form>
