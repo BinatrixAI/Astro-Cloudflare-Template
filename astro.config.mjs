@@ -18,6 +18,10 @@ export default defineConfig({
     react(),
     // CMS admin at /_emdash/admin. Shares the payments D1 (`DB`); media in R2.
     emdash({
+      // TODO: your site's public origin. Production setup refuses to run
+      // without it (EmDash does not read Astro's `site`); the EMDASH_SITE_URL
+      // var works too.
+      siteUrl: 'https://your-domain.com',
       database: d1({ binding: 'DB' }),
       storage: r2({ binding: 'MEDIA' }),
       // Production login is Cloudflare Access only (local dev falls back to

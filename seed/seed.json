@@ -152,6 +152,7 @@
     {
       "slug": "products",
       "label": "Products",
+      "urlPattern": "/checkout/{slug}",
       "labelSingular": "Product",
       "description": "Checkout catalog. The slug is the product id used in /checkout/<slug>. Price is in minor units (agorot/cents): 5000 = 50.00.",
       "supports": [
