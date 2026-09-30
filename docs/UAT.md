@@ -34,6 +34,8 @@ npm run dev                        # reads .dev.vars (PAYMENT_PROVIDER=mock, MOC
 | 9b | Forged callback can't block or downgrade | Send the TC9 tampered callback, then the genuine approve link; also genuine approve, then tampered | Row ends `paid` both ways; genuine approve → `/checkout/success` | ☐ |
 | 10 | Idempotency | Replay the Approve callback | Still one `paid` row, no double-count | ☐ |
 | 11 | Admin + logs | GET `/admin` (Basic Auth) | Lists purchases + events; no-auth → **401** | ☐ |
+| 12 | Unpublished product can't be bought | Unpublish (or never publish) a product in the CMS; GET `/checkout/<slug>`; POST it to `/api/checkout` | Page **404**; API **404** `Unknown item`; not listed anywhere on the site | ☐ |
+| 13 | Preview token can't change the price | Save a *draft* price on a published product (don't publish), copy its preview link's `_preview` token; POST `/api/checkout?_preview=<token>` | Charged the **published** price, never the draft one (preview entries are treated as not-for-sale) | ☐ |
 
 ## Reproducible API checks (copy/paste)
 
@@ -53,6 +55,16 @@ curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' \
 # 9 — tamper (wrong amount) -> 302 .../checkout/failed
 curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' \
   "$BASE/api/payments/callback?Order=$O&Amount=1.00&Sign=$S&CCode=0"
+
+# 12 — unpublished product (after unpublishing `starter` in the admin) -> 404 page / 404 {"error":"Unknown item: starter"}
+curl -s -o /dev/null -w '%{http_code}\n' $BASE/checkout/starter
+curl -s -X POST $BASE/api/checkout -H 'content-type: application/json' \
+  -d '{"items":[{"id":"starter","qty":1}],"name":"Dana","lname":"Cohen","email":"dana@example.com","phone":"+972 50 1234567"}'
+
+# 13 — draft price + preview token (T = the `_preview` value from the admin's preview link)
+curl -s -X POST "$BASE/api/checkout?_preview=$T" -H 'content-type: application/json' \
+  -d '{"items":[{"id":"starter","qty":1}],"name":"Dana","lname":"Cohen","email":"dana@example.com","phone":"+972 50 1234567"}'
+# -> amount= the PUBLISHED price, not the draft
 ```
 
 ## Logs & records — how to verify

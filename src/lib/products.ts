@@ -14,9 +14,12 @@ export interface Product {
 
 /** Look up a published product in the CMS `products` collection (slug = id). */
 export async function getProduct(id: string): Promise<Product | undefined> {
-  const { entry, error } = await getEmDashEntry("products", id);
+  const { entry, error, isPreview } = await getEmDashEntry("products", id);
   if (error) throw error;
-  if (!entry) return undefined;
+  // A `?_preview=` token makes EmDash serve the unpublished draft. Never price
+  // (or sell) from a draft — a shared preview link would otherwise let anyone
+  // check out at an unpublished price.
+  if (!entry || isPreview) return undefined;
   const d = entry.data;
   return {
     id,
