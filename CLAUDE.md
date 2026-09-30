@@ -42,7 +42,7 @@ Rules of thumb:
 - **In `.astro` files, `<Button asChild>` does nothing.** Astro passes children as a slot, not a React element, so Radix Slot can't merge the classes and the link renders unstyled. Use `<a class={cn(buttonVariants({...}))}>` (`buttonVariants` from `@/components/ui/shadcn`, `cn` from `@/lib/utils`). `asChild` is fine inside React islands.
 - **EmDash's `<Image>` is an Astro component.** Cards that show CMS images belong in `.astro`. To animate that static markup with Motion, wrap it in a small client island (e.g. a `Reveal` wrapper).
 - `CurvedMenu` (`src/components/ui/curved-menu.tsx`) is a Motion-based alternative to HeroUI's navbar-menu toggle. It is currently **not imported anywhere** — wire it up or delete it.
-- Only stable per-package HeroUI deps are installed (`@heroui/button`, `@heroui/card`, `@heroui/navbar`, `@heroui/system`, `@heroui/theme`, plus `chip`/`divider`/`link` for the matrix). The beta `@heroui/react` / `@heroui/styles` meta packages were removed.
+- Only stable per-package HeroUI deps for the chrome are installed (`@heroui/navbar`, `@heroui/chip`, `@heroui/divider`, `@heroui/link`, plus `@heroui/system` + `@heroui/theme`). HeroUI Button/Card were removed in v3.1.0 — use shadcn. The beta `@heroui/react` / `@heroui/styles` meta packages were removed.
 
 ## Deployment
 
