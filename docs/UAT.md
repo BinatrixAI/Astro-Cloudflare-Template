@@ -29,8 +29,9 @@ npm run dev                        # reads .dev.vars (PAYMENT_PROVIDER=mock, MOC
 | 5 | Link + record | POST valid checkout | Response `url` → `/mock-pay`; `pending` row + `link_created` event; `items_json` stored | ☐ |
 | 6 | Mock hosted page | GET the `url`; then with a bad `sig` | Valid: order/total + Approve/Decline; bad sig → **400** | ☐ |
 | 7 | Approve → paid | Approve (CCode=0) | Verify → row `paid` (stores `Id`/`ACode`), `verified_paid` event → `/checkout/success` | ☐ |
-| 8 | Decline → failed | Callback CCode=901 | Row `failed`, `verify_failed` event → `/checkout/failed` | ☐ |
-| 9 | Tamper callback | Approve with wrong `Amount` | Sig/amount mismatch → rejected, row `failed` | ☐ |
+| 8 | Decline → failed page | Callback CCode=901 | Row stays `pending` (an unverified callback never writes status), `verify_failed` event → `/checkout/failed` | ☐ |
+| 9 | Tamper callback | Approve with wrong `Amount` | Sig/amount mismatch → rejected, row stays `pending`, `verify_failed` event | ☐ |
+| 9b | Forged callback can't block or downgrade | Send the TC9 tampered callback, then the genuine approve link; also genuine approve, then tampered | Row ends `paid` both ways; genuine approve → `/checkout/success` | ☐ |
 | 10 | Idempotency | Replay the Approve callback | Still one `paid` row, no double-count | ☐ |
 | 11 | Admin + logs | GET `/admin` (Basic Auth) | Lists purchases + events; no-auth → **401** | ☐ |
 

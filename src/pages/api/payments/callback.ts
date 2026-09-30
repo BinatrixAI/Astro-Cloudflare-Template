@@ -60,7 +60,11 @@ export const GET: APIRoute = async ({ url, redirect }) => {
     : !amountOk
       ? "amount_mismatch"
       : `declined ccode=${ccode}`;
-  await updatePurchaseStatus(env.DB, order, "failed");
+  // Never write status from an unverified callback. `verify.ok` is false for a
+  // genuine decline AND for a forged/tampered request, and the two can't be told
+  // apart — so marking the row failed would let anyone who knows the order id
+  // block the real payment. A declined order stays `pending`; the audit log
+  // below records why.
   await logEvent(env.DB, order, "verify_failed", reason, { verifyRaw: verify.raw });
   console.error(JSON.stringify({ evt: "callback.failed", order, reason }));
   return redirect(`/checkout/failed?order=${encodeURIComponent(order)}`);
