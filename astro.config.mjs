@@ -38,5 +38,16 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    // Pre-bundle SSR deps that Vite otherwise discovers mid-request on a cold
+    // start: it re-optimizes, reloads, and that first render fails with React's
+    // "Invalid hook call" (two React copies during the swap). The adapter's
+    // Vite environment is named `ssr`. Add any new SSR-imported package here.
+    environments: {
+      ssr: {
+        optimizeDeps: {
+          include: ['astro-seo', '@heroui/navbar', '@heroui/system', 'motion/react'],
+        },
+      },
+    },
   },
 });
