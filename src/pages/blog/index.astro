@@ -1,0 +1,22 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getEmDashCollection } from "emdash";
+
+const { entries: posts, error } = await getEmDashCollection("posts");
+if (error) throw error;
+---
+
+<Layout title="Blog">
+  <main class="mx-auto max-w-3xl px-6 py-12 md:py-24">
+    <h1 class="mb-8 text-4xl font-bold">Blog</h1>
+    {posts.length === 0 && <p class="text-muted-foreground">No posts yet.</p>}
+    <ul class="space-y-6">
+      {posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.id}`} class="text-2xl font-semibold hover:underline">{post.data.title}</a>
+          {post.data.excerpt && <p class="mt-1 text-muted-foreground">{post.data.excerpt}</p>}
+        </li>
+      ))}
+    </ul>
+  </main>
+</Layout>

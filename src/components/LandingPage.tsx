@@ -1,12 +1,13 @@
 import { HeroUIProvider } from "@heroui/system";
-import { Button } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@heroui/navbar";
 import { motion } from "motion/react";
-import siteContent from "@/content/site.json";
+import { Button, Card, CardContent } from "@/components/ui/shadcn";
+import type siteContent from "@/content/site.json";
 
-export default function LandingPage() {
-  const { navigation, hero, features, footer } = siteContent;
+export type LandingContent = typeof siteContent;
+
+export default function LandingPage({ content }: { content: LandingContent }) {
+  const { navigation, hero, features, footer } = content;
 
   return (
     <HeroUIProvider>
@@ -27,8 +28,8 @@ export default function LandingPage() {
           </NavbarContent>
           <NavbarContent justify="end">
             <NavbarItem>
-              <Button as="a" href={navigation.cta.href} color="primary" variant="solid">
-                {navigation.cta.label}
+              <Button asChild>
+                <a href={navigation.cta.href}>{navigation.cta.label}</a>
               </Button>
             </NavbarItem>
           </NavbarContent>
@@ -58,8 +59,8 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Button as="a" href={hero.cta.href} color="primary" size="lg" className="animate-pulse-glow">
-                {hero.cta.label}
+              <Button asChild size="lg" className="animate-pulse-glow">
+                <a href={hero.cta.href}>{hero.cta.label}</a>
               </Button>
             </motion.div>
           </div>
@@ -81,10 +82,10 @@ export default function LandingPage() {
                   viewport={{ once: true }}
                 >
                   <Card className="glass-card hover-lift h-full">
-                    <CardBody className="p-6">
+                    <CardContent className="p-6">
                       <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                       <p className="text-foreground/70">{feature.description}</p>
-                    </CardBody>
+                    </CardContent>
                   </Card>
                 </motion.div>
               ))}
