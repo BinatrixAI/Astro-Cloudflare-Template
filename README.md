@@ -22,12 +22,16 @@ A production-ready template for building modern web applications with:
 - **Astro 7** - Server-side rendering with React islands (Vite 8 / Rolldown)
 - **React 19** - Interactive components
 - **Tailwind CSS 4** - Utility-first styling (CSS-first config)
-- **HeroUI v3** - Beautiful, accessible components (navbars, modals, etc.)
-- **shadcn/ui** - Customizable primitives (forms, cards, inputs, badges)
+- **HeroUI** - App chrome and overlays (navbar, chip, link, divider; add modal/dropdown as needed)
+- **shadcn/ui** - Customizable primitives (buttons, forms, cards, inputs, badges)
 - **Motion v13** - Smooth animations
 - **Cloudflare Workers + D1** - Edge deployment with a SQLite database
-- **EmDash CMS** - Admin at `/_emdash/admin` for landing texts, products/prices, posts, pages, menus and media (D1 + R2)
+- **EmDash CMS** - Admin at `/_emdash/admin` for landing texts, products/prices, posts, pages, menus and media (D1 + R2), behind Cloudflare Access
 - **Payments** - Optional payment pages (Yaad Sarig / Hyp) with a mock provider for local testing
+
+> **New in v3.1.0:** the EmDash CMS, a blog and CMS pages, CMS-managed products and prices, and
+> payment-callback hardening. See [CHANGELOG.md](CHANGELOG.md). Setting up the CMS login is a
+> **before-first-deploy** step; see [CMS](#cms-emdash).
 
 ## Use This Template
 
@@ -126,8 +130,9 @@ Pages artifacts, and Pages support was dropped in adapter v13.
 ## Project Structure
 
 ```
-├── migrations/              # D1 SQL migrations (payments schema)
-├── public/                  # Static assets (copied verbatim into dist/client)
+├── migrations/              # D1 SQL migrations (payments schema; EmDash runs its own)
+├── public/                  # Static assets (copied verbatim into dist/client), incl. og-image.jpg
+├── seed/seed.json           # EmDash content model + sample content
 ├── src/
 │   ├── components/
 │   │   ├── LandingPage.tsx      # Demo landing page
@@ -141,7 +146,7 @@ Pages artifacts, and Pages support was dropped in adapter v13.
 │   ├── layouts/Layout.astro    # Base layout (has a `head` slot for fonts, etc.)
 │   ├── lib/
 │   │   ├── utils.ts            # cn() helper
-│   │   ├── products.ts         # Product catalog access
+│   │   ├── products.ts         # Product lookup from the CMS (published only, never previews)
 │   │   ├── catalog.ts          # getPriceableItem() resolver
 │   │   ├── validation.ts       # zod schemas (buyer + cart)
 │   │   ├── db.ts               # D1 helpers (purchases, payment_events)
@@ -149,13 +154,15 @@ Pages artifacts, and Pages support was dropped in adapter v13.
 │   ├── env.d.ts                # ENV bindings/secrets type + cloudflare:workers module
 │   ├── middleware.ts           # Basic-Auth guard for /admin
 │   ├── pages/
-│   │   ├── index.astro
+│   │   ├── index.astro         # Landing page (CMS `landing` entry)
+│   │   ├── blog/index.astro, blog/[slug].astro   # CMS `posts`
+│   │   ├── [slug].astro        # CMS `pages`
 │   │   ├── checkout/[product].astro, success.astro, failed.astro
 │   │   ├── mock-pay.astro      # Mock "hosted payment" page (UAT)
 │   │   ├── admin/index.astro   # Purchases + audit log (Basic Auth)
 │   │   └── api/checkout.ts, api/payments/callback.ts
 │   └── styles/global.css, hero.ts
-├── astro.config.mjs · components.json · wrangler.jsonc · CLAUDE.md · CHANGELOG.md · docs/UAT.md
+├── astro.config.mjs · components.json · wrangler.jsonc · emdash-env.d.ts · CLAUDE.md · CHANGELOG.md · docs/UAT.md
 └── dist/                    # build output: client/ (assets) + server/ (Worker + wrangler.json)
 ```
 

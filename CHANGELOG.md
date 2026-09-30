@@ -1,5 +1,55 @@
 # Changelog
 
+## 3.1.0 — 2026-09-30
+
+Adds the **EmDash CMS** and hardens payments. Validated end to end on a separate test site
+(locally and live behind Cloudflare Access), which found 14 issues, all fixed here.
+**`npm audit`: 0.**
+
+### Before you deploy
+
+- **Set up the CMS login first.** Set `siteUrl` and `teamDomain` in `astro.config.mjs`, create a
+  Cloudflare Access app for `<your-domain>/_emdash/*`, then `wrangler secret put CF_ACCESS_AUDIENCE`
+  and `EMDASH_ENCRYPTION_KEY` (back the key up). Until the setup wizard has run it is reachable
+  without login, and production setup refuses to run without `siteUrl`.
+- **`*.workers.dev` is not covered** by an Access app on a custom domain. Set `workers_dev: false`
+  once your domain is live, or add the workers.dev host to the app.
+- New bindings: R2 `MEDIA`, `IMAGES`, KV `SESSION` (sessions are back on because EmDash uses
+  `Astro.session`), plus a `* * * * *` cron. The Worker entry is now `@emdash-cms/cloudflare/worker`.
+
+### Added
+
+- EmDash at `/_emdash/admin`. It shares the payments D1 `DB`, stores media in R2 and resizes it
+  through `IMAGES`. The content model is in `seed/seed.json`: `landing`, `products`, `posts`,
+  `pages` and the `primary` menu.
+- The landing page, products and prices come from the CMS. `src/content/products.json` was removed,
+  and `site.json` is only the pre-setup fallback.
+- `/blog`, `/blog/[slug]` and `/[slug]` routes.
+- UAT TC12 (an unpublished product can't be bought) and TC13 (a preview token can't change the price).
+- A placeholder `public/og-image.jpg`.
+
+### Fixed
+
+- **Payments (security):**
+  - A `?_preview=` token made checkout charge a product's unpublished draft price. Preview entries
+    are now never priced or sold.
+  - A forged callback could block or downgrade a payment. Unverified callbacks no longer write
+    status, and a paid row can never be downgraded. Declines now stay `pending`, with a
+    `verify_failed` audit event.
+- **Cold dev start:** the first request failed with React's "Invalid hook call". SSR deps are now
+  pre-bundled via `vite.environments.ssr.optimizeDeps.include`.
+- **HeroUI styles:** the Tailwind `@source` glob pointed one directory too high and never matched,
+  so HeroUI class strings (e.g. the navbar's) were missing. CSS grows by about 23 KB gzipped.
+- **CMS links:** products have a `urlPattern` (`/checkout/{slug}`), so admin preview and
+  view-on-site links work.
+- **UI matrix:** `LandingPage.tsx` uses shadcn Button/Card, and the checkout copy is
+  provider-neutral.
+
+### Removed
+
+- `@heroui/button` and `@heroui/card` (use shadcn). HeroUI remains for chrome: navbar, chip,
+  divider and link.
+
 ## 3.0.0 — 2026-09-05
 
 Astro 5 → 7, `@astrojs/cloudflare` 12 → 14, and a full dependency refresh.
